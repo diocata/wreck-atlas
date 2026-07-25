@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 export const metadata: Metadata = {
   title: "Wreck Atlas — Interactive Global Shipwreck Map",
@@ -15,4 +16,4 @@ export const metadata: Metadata = {
     description: "Explore 102,000+ documented shipwrecks worldwide on an interactive tactical sonar map. Discover historical maritime data, sinking eras, and vessel details.",
   },
 };
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) { return <html lang="en"><body>{children}</body></html>; }
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) { return <html lang="en"><body>{children}<Analytics /></body></html>; }
