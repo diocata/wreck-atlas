@@ -30,6 +30,15 @@ export function SourceStatus({ dataSource }: { dataSource?: WreckDataSource }) {
         OSM · OPENFREEMAP
       </a>
       <span className="source-divider" />
+      <a
+        href="https://www.flaticon.com/free-icons/ship"
+        target="_blank"
+        rel="noreferrer"
+        title="Ship icons created by Magnific - Flaticon"
+      >
+        ICON BY MAGNIFIC
+      </a>
+      <span className="source-divider" />
       {isCacheLoading ? (
         <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "var(--cyan, #00f0ff)" }}>
           <RefreshCw size={10} style={{ animation: "spin 1s linear infinite" }} />
