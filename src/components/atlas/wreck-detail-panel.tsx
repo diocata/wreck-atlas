@@ -98,7 +98,7 @@ export function WreckDetailPanel() {
   if (!wreck) return null;
 
   const provenance =
-    wreck.provenance === "ukho-derived" ? "UKHO-derived record" : "Prototype reference";
+    wreck.provenance === "ukho-derived" ? "UKHO-derived record" : "Historical reference";
 
   return (
     <aside className="detail-panel" aria-label={`${wreck.name} details`}>
@@ -156,7 +156,7 @@ export function WreckDetailPanel() {
           UKHO source information <ExternalLink size={14} />
         </a>
       ) : (
-        <p className="source-warning">Verify this prototype reference with the relevant authority.</p>
+        <p className="source-warning">Verify this reference record with the relevant authority.</p>
       )}
     </aside>
   );
