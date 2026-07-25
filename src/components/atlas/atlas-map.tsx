@@ -154,6 +154,7 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
       style: "https://tiles.openfreemap.org/styles/positron",
       center: [4, 25],
       zoom: 1.5,
+      attributionControl: false,
     });
 
     map.current = instance;
