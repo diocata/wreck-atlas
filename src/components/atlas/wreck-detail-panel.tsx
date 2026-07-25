@@ -177,10 +177,10 @@ export function WreckDetailPanel() {
           href="https://www.flaticon.com/free-animated-icon/ship_19018550"
           target="_blank"
           rel="noopener noreferrer"
-          title="Ship icon created by Freepik - Flaticon"
+          title="Ship icon created by Magnific - Flaticon"
           style={{ color: "var(--ink)", textDecoration: "underline", textDecorationColor: "var(--cyan)", opacity: 0.8 }}
         >
-          FLATICON (FREEPIK)
+          FLATICON (MAGNIFIC)
         </a>
       </div>
     </aside>
