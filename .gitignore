@@ -1,0 +1,20 @@
+node_modules/
+.next/
+out/
+.env*
+!.env.example
+*.tsbuildinfo
+.DS_Store
+
+# Local agent context and tool metadata (not project artifacts)
+AGENTS.md
+Agents.md
+PROJECT_HANDOFF.md
+.agents/
+.codex/
+.claude/
+.cursor/
+.windsurf/
+.aider*
+CLAUDE.md
+GEMINI.md
