@@ -278,13 +278,7 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
           "icon-pitch-alignment": "map",
         },
         paint: {
-          "icon-opacity": [
-            "interpolate", ["linear"], ["zoom"],
-            0, 0.65,
-            4, 0.75,
-            7, 0.88,
-            10, 1,
-          ],
+          "icon-opacity": 1,
         },
       });
 
@@ -366,11 +360,7 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
           "text-color": "#1a3a42",
           "text-halo-color": "rgba(255, 255, 255, 0.85)",
           "text-halo-width": 1.5,
-          "text-opacity": [
-            "interpolate", ["linear"], ["zoom"],
-            10, 0.7,
-            12, 1,
-          ],
+          "text-opacity": 1,
         },
       });
 
