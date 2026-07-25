@@ -1,7 +1,7 @@
 {
   "name": "wreck-atlas",
   "version": "1.0.0",
-  "description": "A map-first shipwreck exploration prototype.",
+  "description": "An educational, map-first atlas of documented shipwrecks.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

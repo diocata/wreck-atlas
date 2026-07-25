@@ -18,19 +18,21 @@ export const wreckSchema = z.object({
   sourceRelease: z.string(),
   sourceUrl: z.url().nullable(),
   licence: z.string(),
-  provenance: z.enum(["ukho-derived", "prototype-reference"]),
   approximatePosition: z.boolean(),
-  prototype: z.boolean(),
 });
 
 export type Wreck = z.infer<typeof wreckSchema>;
-export type WreckFeature = Pick<
-  Wreck,
-  "id" | "name" | "category" | "coordinates" | "sunkYear" | "depthM"
->;
 export type WreckCompactItem = Pick<
   Wreck,
   "id" | "name" | "category" | "type" | "coordinates" | "sunkYear" | "depthM"
 >;
-export type WreckDataSource = "demo" | "supabase";
 
+export const wreckCompactItemSchema = wreckSchema.pick({
+  id: true,
+  name: true,
+  category: true,
+  type: true,
+  coordinates: true,
+  sunkYear: true,
+  depthM: true,
+});

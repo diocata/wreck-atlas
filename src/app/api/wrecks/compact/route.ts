@@ -1,25 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import {
-  getCompactWrecks,
-  getWreckDataSource,
-} from "@/lib/repositories/wreck-repository";
-import { eraSchema } from "@/lib/validation/wreck-query";
+import { NextResponse } from "next/server";
+import { getCompactWrecks } from "@/lib/repositories/wreck-repository";
 
 const CURRENT_ETAG = '"ukho-2026-q3"';
 
-export async function GET(request: NextRequest) {
-  const parsed = eraSchema.safeParse(
-    request.nextUrl.searchParams.get("era") ?? "all",
-  );
-
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid era filter", issues: parsed.error.issues },
-      { status: 400 },
-    );
-  }
-
-  const era = parsed.data;
+export async function GET(request: Request) {
   const ifNoneMatch = request.headers.get("if-none-match");
 
   if (ifNoneMatch && ifNoneMatch === CURRENT_ETAG) {
@@ -33,7 +17,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const wrecks = await getCompactWrecks(era);
+    const wrecks = await getCompactWrecks();
 
     return NextResponse.json(
       {
@@ -41,7 +25,7 @@ export async function GET(request: NextRequest) {
         meta: {
           etag: CURRENT_ETAG,
           count: wrecks.length,
-          source: getWreckDataSource(),
+          source: "ukho",
         },
       },
       {

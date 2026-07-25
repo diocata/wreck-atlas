@@ -24,7 +24,9 @@ export function WreckDetailPanel() {
     let current = true;
     const controller = new AbortController();
     setStatus("loading");
-    fetch(`/api/wrecks/${selected}`, { signal: controller.signal })
+    fetch(`/api/wrecks/${encodeURIComponent(selected)}`, {
+      signal: controller.signal,
+    })
       .then(async (response) => (response.ok ? wreckSchema.safeParse(await response.json()) : null))
       .then((parsed) => {
         if (!current) return;
@@ -97,9 +99,6 @@ export function WreckDetailPanel() {
 
   if (!wreck) return null;
 
-  const provenance =
-    wreck.provenance === "ukho-derived" ? "UKHO-derived record" : "Historical reference";
-
   return (
     <aside className="detail-panel" aria-label={`${wreck.name} details`}>
       <div className="sheet-handle" />
@@ -114,7 +113,7 @@ export function WreckDetailPanel() {
       <div className="panel-kicker">
         <Crosshair size={14} />
         Signal confirmed
-        <span>{provenance}</span>
+        <span>UKHO record</span>
       </div>
       <h1>{wreck.name}</h1>
       <p className="record-type">{wreck.type}</p>

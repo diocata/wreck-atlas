@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { AlertTriangle, RotateCw } from "lucide-react";
-import type { WreckCompactItem, WreckDataSource } from "@/lib/domain/wreck";
+import type { WreckCompactItem } from "@/lib/domain/wreck";
 import { useAtlasStore } from "@/stores/atlas-store-provider";
 import { loadCachedWrecks } from "@/lib/cache/wreck-cache";
 
@@ -78,7 +78,7 @@ class ResetViewControl implements maplibregl.IControl {
 }
 
 
-export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
+export function AtlasMap() {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const sourceReady = useRef(false);
@@ -184,7 +184,7 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
       instance.addSource("wrecks", {
         type: "geojson",
         data: latestData.current,
-        cluster: dataSource === "supabase",
+        cluster: true,
         clusterMaxZoom: 12,
         clusterRadius: 50,
       });
@@ -455,7 +455,7 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
     instance.on("error", (event) => {
       const sourceId = (event as typeof event & { sourceId?: string }).sourceId;
 
-      if (dataSource === "supabase" && sourceId === "wrecks") {
+      if (sourceId === "wrecks") {
         setError(true);
       }
     });
@@ -464,8 +464,7 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
       const sourceId = (event as typeof event & { sourceId?: string }).sourceId;
 
       if (
-        dataSource === "supabase"
-        && sourceId === "wrecks"
+        sourceId === "wrecks"
         && instance.isSourceLoaded("wrecks")
       ) {
         setError(false);
@@ -476,7 +475,7 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
       const coordinates = (event as CustomEvent<{ coordinates: [number, number] }>).detail.coordinates;
       instance.flyTo({
         center: coordinates,
-        zoom: Math.max(instance.getZoom(), dataSource === "supabase" ? 12 : 6),
+        zoom: Math.max(instance.getZoom(), 12),
         duration: reduceMotion ? 0 : 850,
         essential: !reduceMotion,
       });
@@ -489,7 +488,7 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
       instance.remove();
       map.current = null;
     };
-  }, [dataSource, setSelected]);
+  }, [setSelected]);
 
   /* Keep selected-icon filter in sync */
   useEffect(() => {
@@ -539,4 +538,3 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
     </>
   );
 }
-

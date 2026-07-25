@@ -3,9 +3,8 @@
 import { RefreshCw, Database } from "lucide-react";
 import { useAtlasStore } from "@/stores/atlas-store-provider";
 import { clearWreckCache } from "@/lib/cache/wreck-cache";
-import type { WreckDataSource } from "@/lib/domain/wreck";
 
-export function SourceStatus({ dataSource }: { dataSource?: WreckDataSource }) {
+export function SourceStatus() {
   const compactWrecks = useAtlasStore((state) => state.compactWrecks);
   const isCacheLoading = useAtlasStore((state) => state.isCacheLoading);
   const resetCacheState = useAtlasStore((state) => state.resetCacheState);
@@ -39,16 +38,14 @@ export function SourceStatus({ dataSource }: { dataSource?: WreckDataSource }) {
         <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }} title="Offline IndexedDB cache active">
           <Database size={10} />
           <span>{compactWrecks.length.toLocaleString()} CACHED</span>
-          {dataSource === "supabase" && (
-            <button
-              onClick={handleClearCache}
-              style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", padding: "0 2px", opacity: 0.7 }}
-              title="Clear cache and resync"
-              aria-label="Clear cache and resync"
-            >
-              <RefreshCw size={9} />
-            </button>
-          )}
+          <button
+            onClick={handleClearCache}
+            style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", padding: "0 2px", opacity: 0.7 }}
+            title="Clear cache and resync"
+            aria-label="Clear cache and resync"
+          >
+            <RefreshCw size={9} />
+          </button>
         </span>
       ) : null}
       {compactWrecks.length > 0 && <span className="source-divider" />}
@@ -56,5 +53,4 @@ export function SourceStatus({ dataSource }: { dataSource?: WreckDataSource }) {
     </footer>
   );
 }
-
 

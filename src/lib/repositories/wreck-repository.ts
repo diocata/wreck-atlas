@@ -1,17 +1,9 @@
 import "server-only";
 
-import {
-  compactWrecksFor as compactDemoWrecks,
-  featuresFor as demoFeaturesFor,
-  findWreck as findDemoWreck,
-  searchWrecks as searchDemoWrecks,
-} from "@/lib/repositories/demo-wreck-repository";
 import { z } from "zod";
 import type {
   Wreck,
   WreckCompactItem,
-  WreckDataSource,
-  WreckFeature,
 } from "@/lib/domain/wreck";
 
 
@@ -174,31 +166,8 @@ function toWreck(row: z.infer<typeof publicWreckRowSchema>): Wreck {
     sourceRelease,
     sourceUrl,
     licence,
-    provenance: "ukho-derived",
     approximatePosition: false,
-    prototype: false,
   };
-}
-
-export function getWreckDataSource(): WreckDataSource {
-  const configured = process.env.WRECK_DATA_SOURCE?.trim().toLowerCase();
-
-  if (configured === "demo") {
-    return "demo";
-  }
-
-  if (configured === "supabase") {
-    getSupabaseConfig();
-    return "supabase";
-  }
-
-  return process.env.SUPABASE_URL && process.env.SUPABASE_PUBLISHABLE_KEY
-    ? "supabase"
-    : "demo";
-}
-
-export function featuresFor(era?: string): WreckFeature[] {
-  return demoFeaturesFor(era);
 }
 
 let serverCompactCachePromise: Promise<WreckCompactItem[]> | null = null;
@@ -218,6 +187,8 @@ async function fetchAllSupabaseCompactWrecks(): Promise<WreckCompactItem[]> {
       const to = from + 999;
       promises.push(
         (async () => {
+          let lastError: unknown;
+
           for (let attempt = 1; attempt <= 3; attempt++) {
             try {
               return await supabaseRequest<unknown[]>(
@@ -229,10 +200,17 @@ async function fetchAllSupabaseCompactWrecks(): Promise<WreckCompactItem[]> {
               );
             } catch (err) {
               if (String(err).includes("416")) return [];
-              await new Promise((res) => setTimeout(res, 250 * attempt));
+              lastError = err;
+
+              if (attempt < 3) {
+                await new Promise((res) => setTimeout(res, 250 * attempt));
+              }
             }
           }
-          return [];
+
+          throw lastError instanceof Error
+            ? lastError
+            : new Error("Failed to load a compact wreck data page");
         })(),
       );
     }
@@ -261,11 +239,7 @@ async function fetchAllSupabaseCompactWrecks(): Promise<WreckCompactItem[]> {
   }));
 }
 
-export async function getCompactWrecks(era?: string): Promise<WreckCompactItem[]> {
-  if (getWreckDataSource() === "demo") {
-    return compactDemoWrecks(era);
-  }
-
+export async function getCompactWrecks(): Promise<WreckCompactItem[]> {
   if (!serverCompactCachePromise) {
     serverCompactCachePromise = fetchAllSupabaseCompactWrecks().catch((err) => {
       serverCompactCachePromise = null;
@@ -273,23 +247,10 @@ export async function getCompactWrecks(era?: string): Promise<WreckCompactItem[]
     });
   }
 
-  const all = await serverCompactCachePromise;
-  if (!era || era === "all") return all;
-
-  return all.filter((wreck) => {
-    if (!wreck.sunkYear) return false;
-    if (era === "before-1900") return wreck.sunkYear < 1900;
-    if (era === "1900-1945") return wreck.sunkYear >= 1900 && wreck.sunkYear <= 1945;
-    return wreck.sunkYear > 1945;
-  });
+  return serverCompactCachePromise;
 }
 
 export async function findWreck(id: string): Promise<Wreck | undefined> {
-
-  if (getWreckDataSource() === "demo") {
-    return findDemoWreck(id);
-  }
-
   const select = [
     "id",
     "source_id",
@@ -322,18 +283,6 @@ export async function findWreck(id: string): Promise<Wreck | undefined> {
 export async function searchWrecks(
   query: string,
 ): Promise<WreckSearchResult[]> {
-  if (getWreckDataSource() === "demo") {
-    return searchDemoWrecks(query).map(
-      ({ id, name, coordinates, sunkYear, type }) => ({
-        id,
-        name,
-        coordinates,
-        sunkYear,
-        type,
-      }),
-    );
-  }
-
   const rows = await supabaseRequest<unknown>(
     "/rpc/search_public_wrecks",
     {
@@ -353,31 +302,4 @@ export async function searchWrecks(
     sunkYear: row.sunk_year,
     type: row.vessel_type,
   }));
-}
-
-export async function fetchWreckTile(
-  zoom: number,
-  x: number,
-  y: number,
-  era: string,
-): Promise<Buffer> {
-  if (getWreckDataSource() !== "supabase") {
-    throw new Error("Vector wreck tiles require the Supabase data source");
-  }
-
-  const encoded = await supabaseRequest<unknown>(
-    "/rpc/get_public_wreck_tile",
-    {
-      method: "POST",
-      body: JSON.stringify({
-        tile_z: zoom,
-        tile_x: x,
-        tile_y: y,
-        era_filter: era,
-      }),
-      cache: "no-store",
-    },
-  );
-
-  return Buffer.from(z.string().parse(encoded), "base64");
 }
