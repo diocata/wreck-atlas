@@ -18,7 +18,7 @@ export function AtlasShell({
         <AtlasMap dataSource={dataSource} />
         <AtlasToolbar />
         <WreckDetailPanel />
-        <SourceStatus />
+        <SourceStatus dataSource={dataSource} />
       </main>
     </AtlasStoreProvider>
   );

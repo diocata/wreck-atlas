@@ -758,6 +758,11 @@ a:focus-visible {
   }
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -767,3 +772,4 @@ a:focus-visible {
     animation-duration: 0.01ms !important;
   }
 }
+
