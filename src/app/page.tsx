@@ -1,2 +1,6 @@
 import { AtlasShell } from "@/components/atlas/atlas-shell";
-export default function Home() { return <AtlasShell />; }
+import { getWreckDataSource } from "@/lib/repositories/wreck-repository";
+
+export default function Home() {
+  return <AtlasShell dataSource={getWreckDataSource()} />;
+}
