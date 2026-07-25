@@ -95,7 +95,6 @@ export function AtlasToolbar() {
       <div className="brand" aria-label="Wreck Atlas">
         <span className="brand-mark"><Anchor aria-hidden="true" size={16} /></span>
         <span>WRECK ATLAS</span>
-        <i>SONAR / β</i>
       </div>
 
       <div className="search-wrap">
@@ -160,30 +159,39 @@ export function AtlasToolbar() {
 
       <div className="filter-wrap">
         <button
-          className="filter-button"
+          className="filter-button arcade-era-btn"
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           aria-controls="era-filter"
         >
-          <SlidersHorizontal size={16} />
-          <span>{currentEra.compact}</span>
-          {era !== "all" && <b aria-label="Era filter active" />}
+          <SlidersHorizontal size={15} />
+          <span className="era-hud-text">
+            <span className="era-hud-prefix">ERA //</span>
+            <b>{currentEra.compact.toUpperCase()}</b>
+          </span>
+          {era !== "all" && <b className="era-active-dot" aria-label="Era filter active" />}
         </button>
         {open && (
-          <div id="era-filter" className="filter-popover" role="dialog" aria-label="Filter by era">
-            <p>Show wrecks by sinking era</p>
-            {eras.map((option) => (
-              <button
-                key={option.value}
-                className={era === option.value ? "selected" : ""}
-                onClick={() => {
-                  setEra(option.value);
-                  setOpen(false);
-                }}
-              >
-                {option.label}
-              </button>
-            ))}
+          <div id="era-filter" className="filter-popover arcade-popover" role="dialog" aria-label="Filter by era">
+            <div className="arcade-popover-header">
+              <span>► SELECT TIMELINE STAGE</span>
+            </div>
+            <div className="arcade-popover-list">
+              {eras.map((option, idx) => (
+                <button
+                  key={option.value}
+                  className={`arcade-stage-btn ${era === option.value ? "selected" : ""}`}
+                  onClick={() => {
+                    setEra(option.value);
+                    setOpen(false);
+                  }}
+                >
+                  <span className="stage-num">0{idx + 1}</span>
+                  <span className="stage-name">{option.label}</span>
+                  {era === option.value && <span className="stage-active">◄</span>}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
