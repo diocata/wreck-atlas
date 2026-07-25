@@ -10,13 +10,8 @@ export const wreckSchema = z.object({
     z.number().min(-180).max(180),
     z.number().min(-90).max(90),
   ]),
-  sunkYear: z
-    .number()
-    .int()
-    .min(1000)
-    .max(new Date().getFullYear())
-    .nullable(),
-  depthM: z.number().nonnegative().max(12000).nullable(),
+  sunkYear: z.number().int().nullable(),
+  depthM: z.number().nullable(),
   story: z.string(),
   surveyNotes: z.string(),
   source: z.string(),

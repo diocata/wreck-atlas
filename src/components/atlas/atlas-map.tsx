@@ -167,16 +167,6 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
   }, [dataSource, era, load]);
 
   useEffect(() => {
-    selectedRef.current = selected;
-    const instance = map.current;
-    if (!instance?.getLayer("wreck-selected")) return;
-    instance.setFilter(
-      "wreck-selected",
-      selected ? ["==", ["get", "id"], selected] : noSelectionFilter,
-    );
-  }, [selected]);
-
-  useEffect(() => {
     if (!container.current || map.current) return;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const instance = new maplibregl.Map({
@@ -289,7 +279,7 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
         source: "wrecks",
         ...sourceLayer,
         filter: selectedRef.current
-          ? ["==", ["get", "id"], selectedRef.current]
+          ? ["==", ["to-string", ["get", "id"]], String(selectedRef.current)]
           : noSelectionFilter,
         paint: {
           "circle-radius": [
@@ -316,7 +306,7 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
         source: "wrecks",
         ...sourceLayer,
         filter: selectedRef.current
-          ? ["==", ["get", "id"], selectedRef.current]
+          ? ["==", ["to-string", ["get", "id"]], String(selectedRef.current)]
           : noSelectionFilter,
         layout: {
           "icon-image": "ship-selected",
@@ -409,20 +399,6 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
       instance.on("style.load", setupLayers);
     }
 
-    /* ─── Update selected icon layer when selection changes ─── */
-    const onSelectionChange = () => {
-      const sel = selectedRef.current;
-      const selFilter: maplibregl.FilterSpecification = sel
-        ? ["==", ["get", "id"], sel]
-        : noSelectionFilter;
-
-      if (instance.getLayer("wreck-selected-icon")) {
-        instance.setFilter("wreck-selected-icon", selFilter);
-      }
-    };
-
-    instance.on("data", () => onSelectionChange());
-
     instance.on("error", (event) => {
       const sourceId = (event as typeof event & { sourceId?: string }).sourceId;
 
@@ -447,7 +423,7 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
       const coordinates = (event as CustomEvent<{ coordinates: [number, number] }>).detail.coordinates;
       instance.flyTo({
         center: coordinates,
-        zoom: Math.max(instance.getZoom(), dataSource === "supabase" ? 9 : 5),
+        zoom: Math.max(instance.getZoom(), dataSource === "supabase" ? 12 : 6),
         duration: reduceMotion ? 0 : 850,
         essential: !reduceMotion,
       });
@@ -469,7 +445,7 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
     if (!instance) return;
 
     const selFilter: maplibregl.FilterSpecification = selected
-      ? ["==", ["get", "id"], selected]
+      ? ["==", ["to-string", ["get", "id"]], String(selected)]
       : noSelectionFilter;
 
     if (instance.getLayer("wreck-selected")) {
