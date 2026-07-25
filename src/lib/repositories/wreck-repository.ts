@@ -1,6 +1,7 @@
 import "server-only";
 
 import {
+  compactWrecksFor as compactDemoWrecks,
   featuresFor as demoFeaturesFor,
   findWreck as findDemoWreck,
   searchWrecks as searchDemoWrecks,
@@ -8,9 +9,11 @@ import {
 import { z } from "zod";
 import type {
   Wreck,
+  WreckCompactItem,
   WreckDataSource,
   WreckFeature,
 } from "@/lib/domain/wreck";
+
 
 const sourceName = "UK Hydrographic Office Global Wrecks & Obstructions";
 const sourceRelease = "July 2026";
@@ -46,6 +49,18 @@ const publicSearchRowSchema = z.object({
   sunk_year: z.number().int().nullable(),
   vessel_type: z.string(),
 });
+
+const mapPointRowSchema = z.object({
+  wreck_id: z.coerce.number(),
+  name: z.string(),
+  category: z.string(),
+  sunk_year: z.coerce.number().int().nullable(),
+  depth_m: z.coerce.number().nullable(),
+  location: z.object({
+    coordinates: z.tuple([z.coerce.number(), z.coerce.number()]),
+  }),
+});
+
 
 export type WreckSearchResult = {
   id: string;
@@ -186,7 +201,91 @@ export function featuresFor(era?: string): WreckFeature[] {
   return demoFeaturesFor(era);
 }
 
+let serverCompactCachePromise: Promise<WreckCompactItem[]> | null = null;
+
+async function fetchAllSupabaseCompactWrecks(): Promise<WreckCompactItem[]> {
+  const select = "wreck_id,name,category,sunk_year,depth_m,location";
+  const allRows: unknown[] = [];
+  let page = 0;
+  const batchSize = 10;
+  let done = false;
+
+  while (!done) {
+    const promises: Promise<unknown[]>[] = [];
+    for (let i = 0; i < batchSize; i++) {
+      const idx = page * batchSize + i;
+      const from = idx * 1000;
+      const to = from + 999;
+      promises.push(
+        (async () => {
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            try {
+              return await supabaseRequest<unknown[]>(
+                `/wreck_map_points?select=${select}&published=is.true&active=is.true`,
+                {
+                  headers: { Range: `${from}-${to}` },
+                  cache: "no-store",
+                },
+              );
+            } catch (err) {
+              if (String(err).includes("416")) return [];
+              await new Promise((res) => setTimeout(res, 250 * attempt));
+            }
+          }
+          return [];
+        })(),
+      );
+    }
+
+    const results = await Promise.all(promises);
+    for (const res of results) {
+      if (!Array.isArray(res) || res.length === 0) {
+        done = true;
+      } else {
+        allRows.push(...res);
+        if (res.length < 1000) done = true;
+      }
+    }
+    page++;
+  }
+
+  const parsed = z.array(mapPointRowSchema).parse(allRows);
+  return parsed.map((row) => ({
+    id: String(row.wreck_id),
+    name: row.name || `UNIDENTIFIED WRECK ${row.wreck_id}`,
+    category: row.category || "Unclassified record",
+    type: row.category || "Wreck or obstruction",
+    coordinates: [row.location.coordinates[0], row.location.coordinates[1]],
+    sunkYear: row.sunk_year,
+    depthM: row.depth_m,
+  }));
+}
+
+export async function getCompactWrecks(era?: string): Promise<WreckCompactItem[]> {
+  if (getWreckDataSource() === "demo") {
+    return compactDemoWrecks(era);
+  }
+
+  if (!serverCompactCachePromise) {
+    serverCompactCachePromise = fetchAllSupabaseCompactWrecks().catch((err) => {
+      serverCompactCachePromise = null;
+      throw err;
+    });
+  }
+
+  const all = await serverCompactCachePromise;
+  if (!era || era === "all") return all;
+
+  return all.filter((wreck) => {
+    if (!wreck.sunkYear) return false;
+    if (era === "before-1900") return wreck.sunkYear < 1900;
+    if (era === "1900-1945") return wreck.sunkYear >= 1900 && wreck.sunkYear <= 1945;
+    return wreck.sunkYear > 1945;
+  });
+}
+
 export async function findWreck(id: string): Promise<Wreck | undefined> {
+
   if (getWreckDataSource() === "demo") {
     return findDemoWreck(id);
   }

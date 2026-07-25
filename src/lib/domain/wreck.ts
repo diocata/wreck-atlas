@@ -28,4 +28,9 @@ export type WreckFeature = Pick<
   Wreck,
   "id" | "name" | "category" | "coordinates" | "sunkYear" | "depthM"
 >;
+export type WreckCompactItem = Pick<
+  Wreck,
+  "id" | "name" | "category" | "type" | "coordinates" | "sunkYear" | "depthM"
+>;
 export type WreckDataSource = "demo" | "supabase";
+
