@@ -30,14 +30,37 @@ export function AtlasToolbar() {
   const selected = useAtlasStore((state) => state.setSelected);
   const open = useAtlasStore((state) => state.filterPanelOpen);
   const setOpen = useAtlasStore((state) => state.setFilterPanelOpen);
+  const compactWrecks = useAtlasStore((state) => state.compactWrecks);
   const currentEra = eras.find((option) => option.value === era) ?? eras[0];
 
   useEffect(() => {
     const controller = new AbortController();
-    if (query.trim().length < 2) {
+    const term = query.trim().toLowerCase();
+    if (term.length < 2) {
       setResults([]);
       return;
     }
+
+    if (compactWrecks.length > 0) {
+      const matches: Result[] = [];
+      for (let i = 0; i < compactWrecks.length; i++) {
+        const w = compactWrecks[i];
+        if (w.name && w.name.toLowerCase().includes(term)) {
+          matches.push({
+            id: w.id,
+            name: w.name,
+            coordinates: w.coordinates,
+            sunkYear: w.sunkYear,
+            type: w.type,
+          });
+          if (matches.length >= 8) break;
+        }
+      }
+      setResults(matches);
+      setActive(-1);
+      return;
+    }
+
     const timeout = setTimeout(async () => {
       try {
         const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
@@ -54,7 +77,8 @@ export function AtlasToolbar() {
       controller.abort();
       clearTimeout(timeout);
     };
-  }, [query]);
+  }, [query, compactWrecks]);
+
 
   const choose = (result: Result) => {
     setEra("all");

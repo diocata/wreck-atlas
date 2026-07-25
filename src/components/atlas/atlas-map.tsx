@@ -4,8 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { AlertTriangle, RotateCw } from "lucide-react";
-import type { WreckDataSource } from "@/lib/domain/wreck";
+import type { WreckCompactItem, WreckDataSource } from "@/lib/domain/wreck";
 import { useAtlasStore } from "@/stores/atlas-store-provider";
+import { loadCachedWrecks } from "@/lib/cache/wreck-cache";
 
 type Collection = GeoJSON.FeatureCollection<
   GeoJSON.Point,
@@ -21,87 +22,24 @@ type Collection = GeoJSON.FeatureCollection<
 const empty: Collection = { type: "FeatureCollection", features: [] };
 const noSelectionFilter: maplibregl.FilterSpecification = ["==", ["get", "id"], ""];
 
-function tileUrl(era: string, retry?: number) {
-  const suffix = retry ? `&retry=${retry}` : "";
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-
-  return `${origin}/api/wrecks/tiles/{z}/{x}/{y}?era=${encodeURIComponent(era)}${suffix}`;
+function toFeatureCollection(items: WreckCompactItem[]): Collection {
+  return {
+    type: "FeatureCollection",
+    features: items.map((item) => ({
+      type: "Feature",
+      geometry: { type: "Point", coordinates: item.coordinates },
+      properties: {
+        id: item.id,
+        name: item.name,
+        category: item.category,
+        sunkYear: item.sunkYear,
+        depthM: item.depthM,
+      },
+    })),
+  };
 }
 
-/* ─── Sleek Arcade Sonar naval vessel marker ─── */
-function createShipSprite(
-  size: number,
-  fill: string,
-  stroke: string,
-  strokeW: number,
-): ImageData {
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d")!;
-  const s = size;
-  const cx = s / 2;
 
-  ctx.clearRect(0, 0, s, s);
-
-  /* Soft outer radar ring */
-  ctx.strokeStyle = fill;
-  ctx.globalAlpha = 0.35;
-  ctx.lineWidth = Math.max(1, s * 0.025);
-  ctx.beginPath();
-  ctx.arc(cx, cx, s * 0.46, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.globalAlpha = 1.0;
-
-  /* Sleek aerodynamic naval hull silhouette */
-  ctx.beginPath();
-  ctx.moveTo(cx, s * 0.08);                         // needle bow
-  ctx.bezierCurveTo(cx + s * 0.18, s * 0.22, cx + s * 0.22, s * 0.40, cx + s * 0.22, s * 0.65); // starboard beam
-  ctx.lineTo(cx + s * 0.16, s * 0.88);              // starboard stern
-  ctx.lineTo(cx - s * 0.16, s * 0.88);              // transom stern
-  ctx.lineTo(cx - s * 0.22, s * 0.65);              // port stern
-  ctx.bezierCurveTo(cx - s * 0.22, s * 0.40, cx - s * 0.18, s * 0.22, cx, s * 0.08); // port beam to bow
-  ctx.closePath();
-
-  /* Fill hull */
-  ctx.fillStyle = fill;
-  ctx.fill();
-
-  /* Stroke hull */
-  if (strokeW > 0) {
-    ctx.strokeStyle = stroke;
-    ctx.lineWidth = strokeW;
-    ctx.lineJoin = "round";
-    ctx.stroke();
-  }
-
-  /* Stepped bridge superstructure deck */
-  const bridgeW = s * 0.24;
-  const bridgeH = s * 0.28;
-  const bridgeX = cx - bridgeW / 2;
-  const bridgeY = s * 0.48;
-
-  ctx.fillStyle = stroke;
-  ctx.beginPath();
-  ctx.roundRect(bridgeX, bridgeY, bridgeW, bridgeH, s * 0.03);
-  ctx.fill();
-
-  /* Glowing sonar core dot on the bridge */
-  ctx.fillStyle = fill;
-  ctx.beginPath();
-  ctx.arc(cx, s * 0.60, s * 0.06, 0, Math.PI * 2);
-  ctx.fill();
-
-  /* Forward deck hatch line */
-  ctx.strokeStyle = stroke;
-  ctx.lineWidth = Math.max(1, s * 0.025);
-  ctx.beginPath();
-  ctx.moveTo(cx - s * 0.08, s * 0.32);
-  ctx.lineTo(cx + s * 0.08, s * 0.32);
-  ctx.stroke();
-
-  return ctx.getImageData(0, 0, s, s);
-}
 
 export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
   const container = useRef<HTMLDivElement>(null);
@@ -116,6 +54,10 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
   const selectedRef = useRef(selected);
   const setEra = useAtlasStore((state) => state.setEra);
   const setSelected = useAtlasStore((state) => state.setSelected);
+  const compactWrecks = useAtlasStore((state) => state.compactWrecks);
+  const setCompactWrecks = useAtlasStore((state) => state.setCompactWrecks);
+  const setIsCacheLoading = useAtlasStore((state) => state.setIsCacheLoading);
+  const isCacheLoading = useAtlasStore((state) => state.isCacheLoading);
 
   const applyData = useCallback((next: Collection) => {
     latestData.current = next;
@@ -125,14 +67,26 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
 
   const load = useCallback(
     async (signal?: AbortSignal) => {
-      if (dataSource !== "demo") return;
-
       setError(false);
       try {
-        const response = await fetch(`/api/wrecks?era=${era}`, { signal });
-        if (!response.ok) throw new Error("data unavailable");
-        const next = (await response.json()) as Collection;
-        if (signal?.aborted) return;
+        let currentWrecks = compactWrecks;
+        if (currentWrecks.length === 0) {
+          setIsCacheLoading(true);
+          const { wrecks, etag } = await loadCachedWrecks("all");
+          if (signal?.aborted) return;
+          currentWrecks = wrecks;
+          setCompactWrecks(wrecks, etag);
+        }
+
+        const filtered = currentWrecks.filter((w) => {
+          if (!era || era === "all") return true;
+          if (!w.sunkYear) return false;
+          if (era === "before-1900") return w.sunkYear < 1900;
+          if (era === "1900-1945") return w.sunkYear >= 1900 && w.sunkYear <= 1945;
+          return w.sunkYear > 1945;
+        });
+
+        const next = toFeatureCollection(filtered);
         setData(next);
         applyData(next);
       } catch (caught) {
@@ -140,31 +94,20 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
         setData(empty);
         applyData(empty);
         setError(true);
+      } finally {
+        setIsCacheLoading(false);
       }
     },
-    [applyData, dataSource, era],
+    [applyData, compactWrecks, era, setCompactWrecks, setIsCacheLoading],
   );
 
   useEffect(() => {
     latestEra.current = era;
-
-    if (dataSource === "supabase") {
-      setError(false);
-      const source = map.current?.getSource("wrecks") as
-        | maplibregl.VectorTileSource
-        | undefined;
-
-      if (sourceReady.current && source) {
-        source.setTiles([tileUrl(era)]);
-      }
-
-      return;
-    }
-
     const controller = new AbortController();
     void load(controller.signal);
     return () => controller.abort();
-  }, [dataSource, era, load]);
+  }, [era, load]);
+
 
   useEffect(() => {
     if (!container.current || map.current) return;
@@ -182,48 +125,90 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
     const setupLayers = () => {
       if (instance.getSource("wrecks")) return;
 
-      /* Register ship sprite images at pixel-ratio 2 for retina */
-      const spriteSize = 64;
+      /* Register transparent PNG ship logos at pixel-ratio 2 for retina */
       const ratio = 2;
+      instance.loadImage("/ship.png").then((response) => {
+        if (!response || !response.data) return;
+        if (!instance.hasImage("ship-default")) {
+          instance.addImage("ship-default", response.data, { pixelRatio: ratio });
+        }
+        if (!instance.hasImage("ship-selected")) {
+          instance.addImage("ship-selected", response.data, { pixelRatio: ratio });
+        }
+      }).catch(() => {});
 
-      instance.addImage(
-        "ship-default",
-        createShipSprite(spriteSize, "#ffe14d", "#a08520", 1.5),
-        { pixelRatio: ratio },
-      );
-      instance.addImage(
-        "ship-selected",
-        createShipSprite(spriteSize, "#ffffff", "#ffe14d", 2),
-        { pixelRatio: ratio },
-      );
-
-      if (dataSource === "supabase") {
-        instance.addSource("wrecks", {
-          type: "vector",
-          tiles: [tileUrl(latestEra.current)],
-          minzoom: 0,
-          maxzoom: 14,
-        });
-      } else {
-        instance.addSource("wrecks", {
-          type: "geojson",
-          data: latestData.current,
-          cluster: false,
-        });
-      }
+      instance.addSource("wrecks", {
+        type: "geojson",
+        data: latestData.current,
+        cluster: dataSource === "supabase",
+        clusterMaxZoom: 12,
+        clusterRadius: 50,
+      });
 
       sourceReady.current = true;
 
-      const sourceLayer = dataSource === "supabase"
-        ? { "source-layer": "wrecks" }
-        : {};
+      /* ─── Cluster cyan glow ─── */
+      instance.addLayer({
+        id: "wreck-clusters-glow",
+        type: "circle",
+        source: "wrecks",
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": "#00f0ff",
+          "circle-radius": [
+            "step", ["get", "point_count"],
+            24, 100,
+            32, 1000,
+            40,
+          ],
+          "circle-opacity": 0.25,
+          "circle-blur": 0.8,
+        },
+      });
+
+      /* ─── Cluster dark sonar center with yellow border ─── */
+      instance.addLayer({
+        id: "wreck-clusters",
+        type: "circle",
+        source: "wrecks",
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": "#0a1418",
+          "circle-radius": [
+            "step", ["get", "point_count"],
+            16, 100,
+            20, 1000,
+            26,
+          ],
+          "circle-stroke-color": "#ffe14d",
+          "circle-stroke-width": 2,
+        },
+      });
+
+      /* ─── Cluster count label ─── */
+      instance.addLayer({
+        id: "wreck-cluster-count",
+        type: "symbol",
+        source: "wrecks",
+        filter: ["has", "point_count"],
+        layout: {
+          "text-field": "{point_count_abbreviated}",
+          "text-font": ["Noto Sans Bold"],
+          "text-size": 12,
+          "text-allow-overlap": true,
+          "text-ignore-placement": true,
+        },
+        paint: {
+          "text-color": "#ffe14d",
+        },
+      });
 
       /* ─── Sonar glow pulse behind each wreck ─── */
       instance.addLayer({
         id: "wreck-glow",
         type: "circle",
         source: "wrecks",
-        ...sourceLayer,
+        filter: ["!has", "point_count"],
         minzoom: 6,
         paint: {
           "circle-color": "#ffe14d",
@@ -250,16 +235,16 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
         id: "wreck-ships",
         type: "symbol",
         source: "wrecks",
-        ...sourceLayer,
+        filter: ["!has", "point_count"],
         layout: {
           "icon-image": "ship-default",
           "icon-size": [
             "interpolate", ["exponential", 1.5], ["zoom"],
-            0, 0.50,
-            4, 0.65,
-            7, 0.85,
-            10, 1.05,
-            13, 1.30,
+            0, 0.07,
+            4, 0.09,
+            7, 0.12,
+            10, 0.15,
+            13, 0.19,
           ],
           "icon-allow-overlap": ["step", ["zoom"], false, 6, true],
           "icon-ignore-placement": ["step", ["zoom"], false, 6, true],
@@ -277,7 +262,6 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
         id: "wreck-selected",
         type: "circle",
         source: "wrecks",
-        ...sourceLayer,
         filter: selectedRef.current
           ? ["==", ["to-string", ["get", "id"]], String(selectedRef.current)]
           : noSelectionFilter,
@@ -304,7 +288,6 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
         id: "wreck-selected-icon",
         type: "symbol",
         source: "wrecks",
-        ...sourceLayer,
         filter: selectedRef.current
           ? ["==", ["to-string", ["get", "id"]], String(selectedRef.current)]
           : noSelectionFilter,
@@ -312,10 +295,10 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
           "icon-image": "ship-selected",
           "icon-size": [
             "interpolate", ["exponential", 1.5], ["zoom"],
-            0, 0.85,
-            7, 1.4,
-            10, 1.8,
-            13, 2.2,
+            0, 0.12,
+            7, 0.18,
+            10, 0.22,
+            13, 0.28,
           ],
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
@@ -330,7 +313,6 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
         id: "wreck-labels",
         type: "symbol",
         source: "wrecks",
-        ...sourceLayer,
         minzoom: 10,
         layout: {
           "text-field": ["coalesce", ["get", "name"], ""],
@@ -364,6 +346,30 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
         const features = instance.queryRenderedFeatures(bbox);
         if (!features.length) return;
 
+        const hitCluster = features.find(
+          (f) => f.layer?.source === "wrecks" && (f.properties?.cluster || f.properties?.point_count),
+        );
+        if (hitCluster && hitCluster.geometry.type === "Point") {
+          const source = instance.getSource("wrecks") as maplibregl.GeoJSONSource | undefined;
+          const clusterId = hitCluster.properties?.cluster_id;
+          if (source && clusterId !== undefined) {
+            source.getClusterExpansionZoom(clusterId).then((zoom) => {
+              instance.easeTo({
+                center: (hitCluster.geometry as GeoJSON.Point).coordinates as [number, number],
+                zoom: zoom + 0.5,
+                duration: reduceMotion ? 0 : 420,
+              });
+            }).catch(() => {});
+          } else {
+            instance.easeTo({
+              center: (hitCluster.geometry as GeoJSON.Point).coordinates as [number, number],
+              zoom: instance.getZoom() + 2,
+              duration: reduceMotion ? 0 : 420,
+            });
+          }
+          return;
+        }
+
         const hit = features.find(
           (f) => f.layer?.source === "wrecks" && (f.properties?.id !== undefined || f.id !== undefined),
         );
@@ -385,11 +391,14 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
         }
       });
 
-      instance.on("mouseenter", "wreck-ships", () => {
-        instance.getCanvas().style.cursor = "crosshair";
-      });
-      instance.on("mouseleave", "wreck-ships", () => {
-        instance.getCanvas().style.cursor = "";
+      const interactiveLayers = ["wreck-ships", "wreck-clusters"];
+      interactiveLayers.forEach((layer) => {
+        instance.on("mouseenter", layer, () => {
+          instance.getCanvas().style.cursor = "pointer";
+        });
+        instance.on("mouseleave", layer, () => {
+          instance.getCanvas().style.cursor = "";
+        });
       });
     };
 
@@ -457,16 +466,7 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
   }, [selected]);
 
   const retry = () => {
-    if (dataSource === "demo") {
-      void load();
-      return;
-    }
-
-    setError(false);
-    const source = map.current?.getSource("wrecks") as
-      | maplibregl.VectorTileSource
-      | undefined;
-    source?.setTiles([tileUrl(era, Date.now())]);
+    void load();
   };
 
   return (
@@ -486,7 +486,7 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
           </button>
         </div>
       )}
-      {dataSource === "demo" && !error && data.features.length === 0 && (
+      {!error && data.features.length === 0 && !isCacheLoading && (
         <div className="map-error" role="status">
           No wreck signals match this era.
           <button onClick={() => setEra("all")}>Clear filter</button>
@@ -495,3 +495,4 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
     </>
   );
 }
+
