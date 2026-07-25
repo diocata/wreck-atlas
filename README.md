@@ -8,6 +8,8 @@ limitations visible.
 > Wreck Atlas is for exploration and education. It is **not for marine
 > navigation**.
 
+![Wreck Atlas showing clustered shipwreck records on the global map](docs/wreck-atlas-map.png)
+
 ## Why this project
 
 Official wreck datasets contain valuable historical, geographic, and maritime
@@ -45,28 +47,6 @@ maritime authorities for navigational or operational decisions.
 - [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
 - [OpenFreeMap](https://openfreemap.org/)
 - [OpenStreetMap contributors](https://www.openstreetmap.org/copyright)
-
-## Run locally
-
-Requires Node.js 22 and pnpm 10.
-
-```bash
-cp .env.example .env.local
-pnpm install
-pnpm dev
-```
-
-Set these server-side values in `.env.local`:
-
-```text
-SUPABASE_URL=https://your-project-ref.supabase.co
-SUPABASE_PUBLISHABLE_KEY=your-publishable-key
-```
-
-Use only a Supabase publishable key. Never place a secret or service-role key
-in this repository or in browser-exposed environment variables.
-
-Open [http://localhost:3000](http://localhost:3000).
 
 ## Project checks
 
