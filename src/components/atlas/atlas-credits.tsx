@@ -29,17 +29,6 @@ export function AtlasCredits() {
         <span>LinkedIn</span>
         <ExternalLink size={10} aria-hidden="true" />
       </a>
-      <span className="credits-divider" aria-hidden="true" />
-      <a
-        href="https://www.flaticon.com/free-animated-icon/ship_19018550"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="credits-link"
-        title="Ship icon created by Freepik - Flaticon"
-        style={{ opacity: 0.65, fontWeight: 500, fontSize: "9.5px", letterSpacing: "0.02em" }}
-      >
-        Icon: Flaticon
-      </a>
     </footer>
   );
 }

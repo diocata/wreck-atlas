@@ -158,6 +158,31 @@ export function WreckDetailPanel() {
       ) : (
         <p className="source-warning">Verify this reference record with the relevant authority.</p>
       )}
+      <div
+        style={{
+          marginTop: "12px",
+          paddingTop: "10px",
+          borderTop: "1px dashed rgba(0, 0, 0, 0.15)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          fontSize: "9px",
+          fontFamily: '"SFMono-Regular", Consolas, monospace',
+          color: "var(--muted)",
+          letterSpacing: "0.02em",
+        }}
+      >
+        <span>MARKER ICON</span>
+        <a
+          href="https://www.flaticon.com/free-animated-icon/ship_19018550"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Ship icon created by Freepik - Flaticon"
+          style={{ color: "var(--ink)", textDecoration: "underline", textDecorationColor: "var(--cyan)", opacity: 0.8 }}
+        >
+          FLATICON (FREEPIK)
+        </a>
+      </div>
     </aside>
   );
 }
