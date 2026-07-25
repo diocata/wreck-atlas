@@ -234,6 +234,7 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
         type: "circle",
         source: "wrecks",
         ...sourceLayer,
+        minzoom: 6,
         paint: {
           "circle-color": "#ffe14d",
           "circle-radius": [
@@ -270,8 +271,9 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
             10, 1.05,
             13, 1.30,
           ],
-          "icon-allow-overlap": true,
-          "icon-ignore-placement": true,
+          "icon-allow-overlap": ["step", ["zoom"], false, 6, true],
+          "icon-ignore-placement": ["step", ["zoom"], false, 6, true],
+          "icon-padding": 2,
           "icon-rotation-alignment": "map",
           "icon-pitch-alignment": "map",
         },
