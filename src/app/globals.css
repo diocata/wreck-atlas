@@ -92,7 +92,7 @@ a:focus-visible {
   backdrop-filter: blur(18px);
 }
 
-.toolbar-filter-open {
+.toolbar-popup-open {
   z-index: 10;
 }
 
@@ -769,6 +769,12 @@ a:focus-visible {
   .search-wrap input {
     /* iOS Safari zooms focused inputs whose computed text is below 16px. */
     font-size: 16px;
+  }
+
+  .search-results {
+    left: 50%;
+    width: calc(100vw - 20px);
+    transform: translateX(-50%);
   }
 
   .filter-button {

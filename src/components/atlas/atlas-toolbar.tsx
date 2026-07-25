@@ -32,6 +32,7 @@ export function AtlasToolbar() {
   const setOpen = useAtlasStore((state) => state.setFilterPanelOpen);
   const compactWrecks = useAtlasStore((state) => state.compactWrecks);
   const currentEra = eras.find((option) => option.value === era) ?? eras[0];
+  const popupOpen = open || results.length > 0;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -91,7 +92,7 @@ export function AtlasToolbar() {
   };
 
   return (
-    <header className={`toolbar${open ? " toolbar-filter-open" : ""}`}>
+    <header className={`toolbar${popupOpen ? " toolbar-popup-open" : ""}`}>
       <div className="brand" aria-label="Wreck Atlas">
         <span className="brand-mark"><Anchor aria-hidden="true" size={16} /></span>
         <span>WRECK ATLAS</span>
