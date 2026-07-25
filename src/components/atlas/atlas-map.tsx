@@ -38,7 +38,44 @@ function toFeatureCollection(items: WreckCompactItem[]): Collection {
     })),
   };
 }
+class ResetViewControl implements maplibregl.IControl {
+  private container!: HTMLDivElement;
+  private button!: HTMLButtonElement;
+  private map?: maplibregl.Map;
+  private onReset?: () => void;
 
+  constructor(onReset?: () => void) {
+    this.onReset = onReset;
+  }
+
+  onAdd(map: maplibregl.Map) {
+    this.map = map;
+    this.container = document.createElement("div");
+    this.container.className = "maplibregl-ctrl maplibregl-ctrl-group reset-view-ctrl";
+    this.button = document.createElement("button");
+    this.button.type = "button";
+    this.button.title = "Reset view to default";
+    this.button.setAttribute("aria-label", "Reset view to default");
+    this.button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>`;
+    this.button.onclick = () => {
+      this.onReset?.();
+      this.map?.flyTo({
+        center: [4, 25],
+        zoom: 1.5,
+        pitch: 0,
+        bearing: 0,
+        duration: 850,
+      });
+    };
+    this.container.appendChild(this.button);
+    return this.container;
+  }
+
+  onRemove() {
+    this.container.parentNode?.removeChild(this.container);
+    this.map = undefined;
+  }
+}
 
 
 export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
@@ -120,6 +157,12 @@ export function AtlasMap({ dataSource }: { dataSource: WreckDataSource }) {
     });
 
     map.current = instance;
+    instance.addControl(
+      new ResetViewControl(() => {
+        setSelected(null);
+      }),
+      "bottom-right",
+    );
     instance.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
 
     const setupLayers = () => {

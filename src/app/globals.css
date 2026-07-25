@@ -77,16 +77,17 @@ a:focus-visible {
   position: absolute;
   z-index: 5;
   top: 18px;
-  right: 18px;
-  left: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(720px, calc(100vw - 36px));
   display: flex;
-  min-height: 58px;
+  min-height: 50px;
   align-items: center;
-  gap: 18px;
-  padding: 8px 9px 8px 10px;
+  gap: 14px;
+  padding: 6px 10px 6px 12px;
   border: 2px solid var(--ink);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.92);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
   box-shadow: 5px 5px 0 color-mix(in srgb, var(--cyan) 82%, white);
   backdrop-filter: blur(18px);
 }
@@ -659,12 +660,21 @@ a:focus-visible {
 @media (max-width: 700px) {
   .toolbar {
     top: 10px;
-    right: 10px;
-    left: 10px;
-    min-height: 52px;
-    gap: 9px;
-    padding: 6px 7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100vw - 20px);
+    min-height: 48px;
+    gap: 8px;
+    padding: 6px 8px;
     box-shadow: 4px 4px 0 var(--cyan);
+  }
+
+  .atlas-credits {
+    bottom: 14px;
+    gap: 5px;
+    padding: 5px 10px;
+    font-size: 9px;
+    box-shadow: 3px 3px 0 var(--yellow);
   }
 
   .brand > span:not(.brand-mark),
@@ -756,6 +766,100 @@ a:focus-visible {
   .maplibregl-ctrl-attrib {
     display: none;
   }
+}
+
+.reset-view-ctrl {
+  margin-bottom: 8px !important;
+}
+
+.reset-view-ctrl button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 29px !important;
+  height: 29px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background-color: var(--yellow) !important;
+  color: var(--ink) !important;
+  line-height: 1 !important;
+}
+
+.reset-view-ctrl button svg {
+  display: block !important;
+  margin: auto !important;
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0 !important;
+}
+
+.reset-view-ctrl button:hover {
+  background-color: var(--cyan) !important;
+}
+
+.atlas-credits {
+  position: absolute;
+  z-index: 5;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 20px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.93);
+  box-shadow: 4px 4px 0 var(--yellow);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  backdrop-filter: blur(14px);
+  white-space: nowrap;
+}
+
+.credits-heart {
+  font-size: 12px;
+}
+
+.credits-link {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--cyan);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  font-weight: 800;
+  transition: all 0.15s ease;
+}
+
+.credits-link:hover {
+  background: var(--yellow);
+  text-decoration-color: var(--ink);
+}
+
+.credits-divider {
+  width: 4px;
+  height: 4px;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  background: var(--cyan);
+  margin: 0 3px;
+}
+
+.credits-social {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 10px;
+  transition: color 0.15s ease;
+}
+
+.credits-social:hover {
+  color: var(--ink);
+  text-decoration: underline;
 }
 
 @keyframes spin {
