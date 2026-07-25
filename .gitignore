@@ -1,4 +1,5 @@
 node_modules/
+.pnpm-store/
 .next/
 out/
 .env*
@@ -9,6 +10,7 @@ out/
 # Local agent context and tool metadata (not project artifacts)
 AGENTS.md
 Agents.md
+PLAN.md
 PROJECT_HANDOFF.md
 .agents/
 .codex/
