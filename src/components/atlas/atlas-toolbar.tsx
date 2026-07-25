@@ -91,7 +91,7 @@ export function AtlasToolbar() {
   };
 
   return (
-    <header className="toolbar">
+    <header className={`toolbar${open ? " toolbar-filter-open" : ""}`}>
       <div className="brand" aria-label="Wreck Atlas">
         <span className="brand-mark"><Anchor aria-hidden="true" size={16} /></span>
         <span>WRECK ATLAS</span>
@@ -161,6 +161,7 @@ export function AtlasToolbar() {
         <button
           className="filter-button arcade-era-btn"
           onClick={() => setOpen(!open)}
+          aria-label={`Filter by era. Current selection: ${currentEra.label}`}
           aria-expanded={open}
           aria-controls="era-filter"
         >
