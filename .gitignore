@@ -20,3 +20,6 @@ PROJECT_HANDOFF.md
 .aider*
 CLAUDE.md
 GEMINI.md
+MEMORIES.md
+scripts/
+supabase/
