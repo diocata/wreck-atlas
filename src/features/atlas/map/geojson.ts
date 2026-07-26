@@ -1,5 +1,8 @@
 import type { WreckCompactItem } from "@/domain/wreck";
-import { isWreckInEra, type Era } from "@/features/atlas/model/era";
+import {
+  isWreckInFilters,
+  type AtlasFilters,
+} from "@/features/atlas/model/filters";
 
 export type WreckFeatureCollection = GeoJSON.FeatureCollection<
   GeoJSON.Point,
@@ -19,12 +22,12 @@ export const emptyWreckFeatureCollection: WreckFeatureCollection = {
 
 export function toWreckFeatureCollection(
   wrecks: WreckCompactItem[],
-  era: Era,
+  filters: AtlasFilters,
 ): WreckFeatureCollection {
   const features: WreckFeatureCollection["features"] = [];
 
   for (const wreck of wrecks) {
-    if (!isWreckInEra(wreck, era)) continue;
+    if (!isWreckInFilters(wreck, filters)) continue;
 
     features.push({
       type: "Feature",

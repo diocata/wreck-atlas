@@ -9,6 +9,7 @@ import {
   revalidateWrecks,
 } from "@/features/atlas/data/wreck-cache";
 import { useAtlasStore } from "@/features/atlas/model/atlas-store-provider";
+import { measureAtlasTask } from "@/features/atlas/model/performance";
 import {
   emptyWreckFeatureCollection,
   toWreckFeatureCollection,
@@ -33,17 +34,26 @@ export function AtlasMap() {
   const [isInitialLoadPending, setIsInitialLoadPending] = useState(true);
 
   const era = useAtlasStore((state) => state.era);
+  const recordKind = useAtlasStore((state) => state.recordKind);
+  const depthBand = useAtlasStore((state) => state.depthBand);
   const selected = useAtlasStore((state) => state.selectedWreckId);
   const compactWrecks = useAtlasStore((state) => state.compactWrecks);
   const isCacheLoading = useAtlasStore((state) => state.isCacheLoading);
-  const setEra = useAtlasStore((state) => state.setEra);
+  const resetFilters = useAtlasStore((state) => state.resetFilters);
   const setSelected = useAtlasStore((state) => state.setSelected);
   const setCompactWrecks = useAtlasStore((state) => state.setCompactWrecks);
   const setIsCacheLoading = useAtlasStore((state) => state.setIsCacheLoading);
 
   const data = useMemo(
-    () => toWreckFeatureCollection(compactWrecks, era),
-    [compactWrecks, era],
+    () => measureAtlasTask(
+      "atlas:geojson-build",
+      () => toWreckFeatureCollection(compactWrecks, {
+        era,
+        recordKind,
+        depthBand,
+      }),
+    ),
+    [compactWrecks, depthBand, era, recordKind],
   );
 
   const loadInitialWrecks = useCallback(async (signal?: AbortSignal) => {
@@ -267,8 +277,8 @@ export function AtlasMap() {
         && !isCacheLoading
         && !isInitialLoadPending && (
         <div className="map-error" role="status">
-          No wreck signals match this era.
-          <button onClick={() => setEra("all")}>Clear filter</button>
+          No wreck signals match these filters.
+          <button onClick={resetFilters}>Clear filters</button>
         </div>
       )}
     </>

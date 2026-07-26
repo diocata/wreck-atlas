@@ -9,5 +9,6 @@ export default defineConfig([
     "coverage/**",
     "node_modules/**",
     "test-results/**",
+    "playwright-report/**",
   ]),
 ]);

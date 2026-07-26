@@ -12,13 +12,16 @@ export const wreckSchema = z.object({
   ]),
   sunkYear: z.number().int().nullable(),
   depthM: z.number().nullable(),
+  depthQuality: z.string().nullable(),
+  status: z.string().nullable(),
+  positionMethod: z.string().nullable(),
+  sourceUpdatedOn: z.iso.date().nullable(),
   story: z.string(),
   surveyNotes: z.string(),
   source: z.string(),
   sourceRelease: z.string(),
   sourceUrl: z.url().nullable(),
   licence: z.string(),
-  approximatePosition: z.boolean(),
 });
 
 export type Wreck = z.infer<typeof wreckSchema>;

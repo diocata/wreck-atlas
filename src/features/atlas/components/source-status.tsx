@@ -8,6 +8,7 @@ export function SourceStatus() {
   const compactWrecks = useAtlasStore((state) => state.compactWrecks);
   const isCacheLoading = useAtlasStore((state) => state.isCacheLoading);
   const resetCacheState = useAtlasStore((state) => state.resetCacheState);
+  const setAboutPanelOpen = useAtlasStore((state) => state.setAboutPanelOpen);
 
   const handleClearCache = async () => {
     await clearWreckCache();
@@ -17,13 +18,16 @@ export function SourceStatus() {
 
   return (
     <footer className="source-status">
-      <a
-        href="https://www.admiralty.co.uk/access-data/marine-data"
-        target="_blank"
-        rel="noreferrer"
+      <button
+        type="button"
+        className="source-data-guide"
+        onClick={(event) => {
+          event.currentTarget.focus({ preventScroll: true });
+          setAboutPanelOpen(true);
+        }}
       >
-        UKHO · OGL
-      </a>
+        UKHO · DATA GUIDE
+      </button>
       <span className="source-divider" />
       <a href="https://openfreemap.org/" target="_blank" rel="noreferrer">
         OSM · OPENFREEMAP

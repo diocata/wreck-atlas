@@ -3,6 +3,8 @@ node_modules/
 .next/
 coverage/
 test-results/
+playwright-report/
+blob-report/
 out/
 .env*
 !.env.example
@@ -22,6 +24,3 @@ PROJECT_HANDOFF.md
 .aider*
 CLAUDE.md
 GEMINI.md
-MEMORIES.md
-scripts/
-supabase/

@@ -4,19 +4,22 @@ import { useStore } from "zustand";
 import { createAtlasStore, type AtlasState } from "./atlas-store";
 
 type AtlasStore = ReturnType<typeof createAtlasStore>;
+type AtlasInitialState = Parameters<typeof createAtlasStore>[0];
 const AtlasStoreContext = createContext<AtlasStore | null>(null);
 
 export function AtlasStoreProvider({
   children,
   store,
+  initialState,
 }: {
   children: ReactNode;
   store?: AtlasStore;
+  initialState?: AtlasInitialState;
 }) {
   const storeRef = useRef<AtlasStore | null>(store ?? null);
 
   if (!storeRef.current) {
-    storeRef.current = createAtlasStore();
+    storeRef.current = createAtlasStore(initialState);
   }
 
   return (

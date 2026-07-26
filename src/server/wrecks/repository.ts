@@ -26,6 +26,7 @@ const publicWreckRowSchema = z.object({
   longitude: z.coerce.number(),
   latitude: z.coerce.number(),
   depth_m: z.coerce.number().nullable(),
+  depth_quality: z.string().nullable(),
   sunk_year: z.coerce.number().int().nullable(),
   position_method: z.string().nullable(),
   circumstances_of_loss: z.string().nullable(),
@@ -129,12 +130,6 @@ function toWreck(row: z.infer<typeof publicWreckRowSchema>): Wreck {
     row.general_comments?.trim() !== story
       ? firstText(row.general_comments)
       : null,
-    row.position_method
-      ? `Position method: ${row.position_method.trim()}.`
-      : null,
-    row.source_updated_on
-      ? `Source record last amended: ${row.source_updated_on}.`
-      : null,
   ]
     .filter((value): value is string => Boolean(value))
     .join("\n\n");
@@ -151,6 +146,10 @@ function toWreck(row: z.infer<typeof publicWreckRowSchema>): Wreck {
     coordinates: [row.longitude, row.latitude],
     sunkYear: row.sunk_year,
     depthM: row.depth_m,
+    depthQuality: firstText(row.depth_quality),
+    status: firstText(row.status),
+    positionMethod: firstText(row.position_method),
+    sourceUpdatedOn: row.source_updated_on,
     story,
     surveyNotes:
       surveyNotes
@@ -159,7 +158,6 @@ function toWreck(row: z.infer<typeof publicWreckRowSchema>): Wreck {
     sourceRelease,
     sourceUrl,
     licence,
-    approximatePosition: false,
   };
 }
 
@@ -257,6 +255,7 @@ export async function findWreck(id: string): Promise<Wreck | undefined> {
     "longitude",
     "latitude",
     "depth_m",
+    "depth_quality",
     "sunk_year",
     "position_method",
     "circumstances_of_loss",

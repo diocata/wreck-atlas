@@ -5,7 +5,13 @@ import { Anchor, Search, SlidersHorizontal, X } from "lucide-react";
 import { wreckSearchResultSchema, type WreckSearchResult } from "@/domain/wreck";
 import { useAtlasStore } from "@/features/atlas/model/atlas-store-provider";
 import { eraOptions } from "@/features/atlas/model/era";
+import {
+  countActiveFilters,
+  depthBandOptions,
+  recordKindOptions,
+} from "@/features/atlas/model/filters";
 import { searchCompactWrecks } from "@/features/atlas/model/search";
+import { HighlightedText } from "./highlighted-text";
 
 export function AtlasToolbar() {
   const [query, setQuery] = useState("");
@@ -14,11 +20,16 @@ export function AtlasToolbar() {
   const input = useRef<HTMLInputElement>(null);
   const era = useAtlasStore((state) => state.era);
   const setEra = useAtlasStore((state) => state.setEra);
+  const recordKind = useAtlasStore((state) => state.recordKind);
+  const setRecordKind = useAtlasStore((state) => state.setRecordKind);
+  const depthBand = useAtlasStore((state) => state.depthBand);
+  const setDepthBand = useAtlasStore((state) => state.setDepthBand);
+  const resetFilters = useAtlasStore((state) => state.resetFilters);
   const selected = useAtlasStore((state) => state.setSelected);
   const open = useAtlasStore((state) => state.filterPanelOpen);
   const setOpen = useAtlasStore((state) => state.setFilterPanelOpen);
   const compactWrecks = useAtlasStore((state) => state.compactWrecks);
-  const currentEra = eraOptions.find((option) => option.value === era) ?? eraOptions[0];
+  const activeFilterCount = countActiveFilters({ era, recordKind, depthBand });
   const popupOpen = open || results.length > 0;
 
   useEffect(() => {
@@ -58,7 +69,7 @@ export function AtlasToolbar() {
 
 
   const choose = (result: WreckSearchResult) => {
-    setEra("all");
+    resetFilters();
     selected(result.id);
     setQuery("");
     setResults([]);
@@ -126,8 +137,14 @@ export function AtlasToolbar() {
                   role="option"
                   aria-selected={index === active}
                 >
-                  <span>{result.name}</span>
-                  <small>{result.sunkYear ?? "Year unknown"} · {result.type}</small>
+                  <span>
+                    <HighlightedText text={result.name} query={query} />
+                  </span>
+                  <small>
+                    <b>Name match</b>
+                    {" · "}
+                    {result.sunkYear ?? "Year unknown"} · {result.type}
+                  </small>
                 </button>
               </li>
             ))}
@@ -139,38 +156,93 @@ export function AtlasToolbar() {
         <button
           className="filter-button arcade-era-btn"
           onClick={() => setOpen(!open)}
-          aria-label={`Filter by era. Current selection: ${currentEra.label}`}
+          aria-label={
+            activeFilterCount === 0
+              ? "Filter wreck records. No filters active"
+              : `Filter wreck records. ${activeFilterCount} active`
+          }
           aria-expanded={open}
-          aria-controls="era-filter"
+          aria-controls="atlas-filter"
         >
           <SlidersHorizontal size={15} />
           <span className="era-hud-text">
-            <span className="era-hud-prefix">ERA //</span>
-            <b>{currentEra.compact.toUpperCase()}</b>
+            <span className="era-hud-prefix">FILTERS //</span>
+            <b>
+              {activeFilterCount === 0
+                ? "ALL RECORDS"
+                : `${activeFilterCount} ACTIVE`}
+            </b>
           </span>
-          {era !== "all" && <b className="era-active-dot" aria-label="Era filter active" />}
+          {activeFilterCount > 0 && (
+            <b className="era-active-dot" aria-label="Filters active" />
+          )}
         </button>
         {open && (
-          <div id="era-filter" className="filter-popover arcade-popover" role="dialog" aria-label="Filter by era">
+          <div
+            id="atlas-filter"
+            className="filter-popover arcade-popover"
+            role="dialog"
+            aria-label="Filter wreck records"
+          >
             <div className="arcade-popover-header">
-              <span>► SELECT TIMELINE STAGE</span>
+              <span>► TUNE WRECK SIGNALS</span>
+              <button
+                type="button"
+                onClick={resetFilters}
+                disabled={activeFilterCount === 0}
+              >
+                Clear all
+              </button>
             </div>
-            <div className="arcade-popover-list">
-              {eraOptions.map((option, idx) => (
-                <button
-                  key={option.value}
-                  className={`arcade-stage-btn ${era === option.value ? "selected" : ""}`}
-                  onClick={() => {
-                    setEra(option.value);
-                    setOpen(false);
-                  }}
-                >
-                  <span className="stage-num">0{idx + 1}</span>
-                  <span className="stage-name">{option.label}</span>
-                  {era === option.value && <span className="stage-active">◄</span>}
-                </button>
-              ))}
-            </div>
+            <fieldset className="filter-group">
+              <legend>Era</legend>
+              <div className="filter-option-grid filter-option-grid-era">
+                {eraOptions.map((option) => (
+                  <button
+                    type="button"
+                    key={option.value}
+                    className={era === option.value ? "selected" : ""}
+                    onClick={() => setEra(option.value)}
+                    aria-pressed={era === option.value}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+            <fieldset className="filter-group">
+              <legend>Record type</legend>
+              <div className="filter-option-grid filter-option-grid-kind">
+                {recordKindOptions.map((option) => (
+                  <button
+                    type="button"
+                    key={option.value}
+                    className={recordKind === option.value ? "selected" : ""}
+                    onClick={() => setRecordKind(option.value)}
+                    aria-pressed={recordKind === option.value}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+            <fieldset className="filter-group">
+              <legend>Recorded depth</legend>
+              <div className="filter-option-grid filter-option-grid-depth">
+                {depthBandOptions.map((option) => (
+                  <button
+                    type="button"
+                    key={option.value}
+                    className={depthBand === option.value ? "selected" : ""}
+                    onClick={() => setDepthBand(option.value)}
+                    aria-pressed={depthBand === option.value}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+              <p>Source measurements may be approximate. Not for navigation.</p>
+            </fieldset>
           </div>
         )}
       </div>

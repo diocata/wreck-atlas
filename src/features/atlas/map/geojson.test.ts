@@ -10,7 +10,11 @@ const wrecks: WreckCompactItem[] = [
 
 describe("toWreckFeatureCollection", () => {
   it("filters and converts records in one GeoJSON collection", () => {
-    const collection = toWreckFeatureCollection(wrecks, "1900-1945");
+    const collection = toWreckFeatureCollection(wrecks, {
+      era: "1900-1945",
+      recordKind: "all",
+      depthBand: "all",
+    });
 
     expect(collection).toMatchObject({ type: "FeatureCollection" });
     expect(collection.features).toHaveLength(1);

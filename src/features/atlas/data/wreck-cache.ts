@@ -4,6 +4,10 @@ import {
   wreckCompactItemSchema,
   type WreckCompactItem,
 } from "@/domain/wreck";
+import {
+  measureAtlasAsync,
+  measureAtlasTask,
+} from "@/features/atlas/model/performance";
 
 const DATA_KEY = "wreck-atlas-compact-data";
 const ETAG_KEY = "wreck-atlas-compact-etag";
@@ -35,12 +39,20 @@ export async function loadCachedWrecks(): Promise<CachedWreckData | null> {
   if (typeof window === "undefined") return null;
 
   try {
-    const [cachedData, etag] = await Promise.all([
-      get<unknown>(DATA_KEY),
-      get<unknown>(ETAG_KEY),
-    ]);
-    const parsedWrecks = z.array(wreckCompactItemSchema).safeParse(cachedData);
-    const parsedEtag = z.string().min(1).safeParse(etag);
+    const [cachedData, etag] = await measureAtlasAsync(
+      "atlas:compact-cache-read",
+      () => Promise.all([
+        get<unknown>(DATA_KEY),
+        get<unknown>(ETAG_KEY),
+      ]),
+    );
+    const [parsedWrecks, parsedEtag] = measureAtlasTask(
+      "atlas:compact-validate",
+      () => [
+        z.array(wreckCompactItemSchema).safeParse(cachedData),
+        z.string().min(1).safeParse(etag),
+      ] as const,
+    );
 
     if (parsedWrecks.success && parsedEtag.success) {
       return { wrecks: parsedWrecks.data, etag: parsedEtag.data };
@@ -66,11 +78,18 @@ export async function revalidateWrecks(
   const request: RequestInit = { headers };
   if (signal) request.signal = signal;
 
-  const response = await fetch("/api/wrecks/compact", request);
+  const response = await measureAtlasAsync(
+    "atlas:compact-fetch",
+    () => fetch("/api/wrecks/compact", request),
+  );
   if (response.status === 304) return { status: "not-modified" };
   if (!response.ok) throw new Error(`Server returned ${response.status}`);
 
-  const parsed = compactPayloadSchema.safeParse(await response.json());
+  const payload = await response.json();
+  const parsed = measureAtlasTask(
+    "atlas:compact-validate",
+    () => compactPayloadSchema.safeParse(payload),
+  );
   if (!parsed.success) throw new Error("Received invalid compact wreck data");
   throwIfAborted(signal);
 

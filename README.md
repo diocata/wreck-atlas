@@ -26,10 +26,15 @@ database or leaving the map.
 
 - Explore documented wreck and obstruction records on a global map
 - Search for wrecks by name and move directly to their recorded position
-- Filter the atlas by historical era
+- Filter records by historical era, record type, and reported depth—including
+  records where those details are unknown
 - Expand dense areas through interactive map clusters
 - Inspect vessel details, reported depth, coordinates, circumstances of loss,
   and survey notes when available
+- Copy a link to a selected wreck and reopen the same filtered view
+- Discover other documented records near a selected wreck
+- Read how incomplete fields, recorded positions, source coverage, and
+  licensing are handled
 - Trace each record back to its source and licence information
 
 ## Data and responsibility
@@ -42,6 +47,10 @@ import audit data remain private.
 Positions, depths, classifications, and historical details may be approximate,
 incomplete, or outdated. Always consult current official charts and relevant
 maritime authorities for navigational or operational decisions.
+
+Missing information is preserved as unknown rather than inferred. A record is
+not removed from the atlas merely because its name, year, category, depth, or
+narrative is not reported.
 
 - [UKHO marine data](https://www.admiralty.co.uk/access-data/marine-data)
 - [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
