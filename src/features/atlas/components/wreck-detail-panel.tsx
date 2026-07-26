@@ -29,6 +29,14 @@ function formatCoordinates(coordinates: [number, number]): string {
   }`;
 }
 
+type SheetMode = "peek" | "half" | "full";
+
+function nextSheetMode(mode: SheetMode): SheetMode {
+  if (mode === "peek") return "half";
+  if (mode === "half") return "full";
+  return "peek";
+}
+
 export function WreckDetailPanel() {
   const selected = useAtlasStore((state) => state.selectedWreckId);
   const setSelected = useAtlasStore((state) => state.setSelected);
@@ -40,10 +48,13 @@ export function WreckDetailPanel() {
   const [wreck, setWreck] = useState<Wreck | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [nearbyOpen, setNearbyOpen] = useState(false);
+  const [sheetMode, setSheetMode] = useState<SheetMode>("half");
   const [copyStatus, setCopyStatus] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const close = useRef<HTMLButtonElement>(null);
   const copyTimer = useRef<number | null>(null);
+  const dragStartY = useRef<number | null>(null);
+  const draggedSheet = useRef(false);
   const nearby = useMemo(
     () => wreck
       ? findNearbyWrecks(compactWrecks, wreck.id, wreck.coordinates)
@@ -55,6 +66,7 @@ export function WreckDetailPanel() {
     setWreck(null);
     setExpanded(false);
     setNearbyOpen(false);
+    setSheetMode("half");
     setCopyStatus("");
     if (!selected) {
       setStatus("idle");
@@ -201,8 +213,57 @@ export function WreckDetailPanel() {
   if (!wreck) return null;
 
   return (
-    <aside className="detail-panel" aria-label={`${wreck.name} details`}>
-      <div className="sheet-handle" />
+    <aside
+      className="detail-panel"
+      data-sheet-state={sheetMode}
+      aria-label={`${wreck.name} details`}
+    >
+      <button
+        type="button"
+        className="sheet-handle"
+        aria-label={
+          sheetMode === "peek"
+            ? "Expand details to half height"
+            : sheetMode === "half"
+              ? "Expand details to full height"
+              : "Collapse details to peek"
+        }
+        aria-expanded={sheetMode !== "peek"}
+        onPointerDown={(event) => {
+          event.currentTarget.setPointerCapture?.(event.pointerId);
+          dragStartY.current = event.clientY;
+          draggedSheet.current = false;
+        }}
+        onPointerUp={(event) => {
+          if (dragStartY.current === null) return;
+
+          const delta = event.clientY - dragStartY.current;
+          dragStartY.current = null;
+          if (Math.abs(delta) < 24) return;
+
+          draggedSheet.current = true;
+          setSheetMode((current) => {
+            if (delta < 0) {
+              return current === "peek" ? "half" : "full";
+            }
+            return current === "full" ? "half" : "peek";
+          });
+        }}
+        onPointerCancel={() => {
+          dragStartY.current = null;
+          draggedSheet.current = false;
+        }}
+        onClick={() => {
+          if (draggedSheet.current) {
+            draggedSheet.current = false;
+            return;
+          }
+          setSheetMode(nextSheetMode);
+        }}
+      >
+        <span aria-hidden="true" />
+        <b>{sheetMode}</b>
+      </button>
       <button
         ref={close}
         className="icon-button close-panel"
@@ -244,7 +305,11 @@ export function WreckDetailPanel() {
           <button
             type="button"
             className="nearby-toggle"
-            onClick={() => setNearbyOpen(!nearbyOpen)}
+            onClick={() => {
+              const nextOpen = !nearbyOpen;
+              setNearbyOpen(nextOpen);
+              if (nextOpen) setSheetMode("full");
+            }}
             aria-expanded={nearbyOpen}
           >
             <RadioTower size={15} />
@@ -279,7 +344,11 @@ export function WreckDetailPanel() {
       )}
       <button
         className="expand-button"
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => {
+          const nextExpanded = !expanded;
+          setExpanded(nextExpanded);
+          if (nextExpanded) setSheetMode("full");
+        }}
         aria-expanded={expanded}
       >
         {expanded ? "Hide source notes" : "View source notes"}

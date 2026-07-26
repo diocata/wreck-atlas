@@ -8,7 +8,7 @@ import { AtlasMap } from "../map/atlas-map";
 import { WreckDetailPanel } from "./wreck-detail-panel";
 import { SourceStatus } from "./source-status";
 import { AtlasCredits } from "./atlas-credits";
-import { AboutDataPanel } from "./about-data-panel";
+import { AtlasGuidePanel } from "./atlas-guide-panel";
 
 export function AtlasShell({
   initialUrlState,
@@ -22,7 +22,7 @@ export function AtlasShell({
         <AtlasMap />
         <AtlasToolbar />
         <WreckDetailPanel />
-        <AboutDataPanel />
+        <AtlasGuidePanel />
         <SourceStatus />
         <AtlasCredits />
       </main>

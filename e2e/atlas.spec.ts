@@ -53,6 +53,7 @@ function detail(id: string) {
 
 async function useControlledData(page: Page) {
   await page.addInitScript(() => {
+    Math.random = () => 0;
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
       value: {
@@ -101,14 +102,50 @@ test("restores shareable state and explains the dataset", async ({ page }) => {
   });
   await dataGuideButton.click();
   await expect(
-    page.getByRole("heading", { name: "What this atlas is showing" }),
+    page.getByRole("heading", { name: "Data, gaps, and responsibility" }),
   ).toBeVisible();
   await expect(page.getByText("Incomplete does not mean invalid")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(
-    page.getByRole("heading", { name: "What this atlas is showing" }),
+    page.getByRole("heading", { name: "Find a wreck. Keep the source in view." }),
   ).toBeHidden();
   await expect(dataGuideButton).toBeFocused();
+});
+
+test("opens the Atlas Guide from the wordmark", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open Atlas Guide" }).click();
+
+  await expect(
+    page.getByRole("heading", { name: "Find a wreck. Keep the source in view." }),
+  ).toBeVisible();
+  await expect(page.getByText("Why this atlas exists")).toBeVisible();
+});
+
+test("discovers a documented wreck", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByText("3 CACHED")).toBeVisible();
+
+  await page.getByRole("button", { name: "Discover a wreck" }).click();
+  await expect(page.getByRole("heading", { name: "RMS Titanic" })).toBeVisible();
+  await expect(page).toHaveURL(/wreck=wreck-1/);
+});
+
+test("changes the mobile detail sheet height", async ({ isMobile, page }) => {
+  test.skip(!isMobile, "The stepped detail sheet is a mobile interaction");
+  await page.goto("/?wreck=wreck-1");
+  await expect(page.getByRole("heading", { name: "RMS Titanic" })).toBeVisible();
+
+  const sheet = page.locator(".detail-panel");
+  await expect(sheet).toHaveAttribute("data-sheet-state", "half");
+  await page.getByRole("button", {
+    name: "Expand details to full height",
+  }).click();
+  await expect(sheet).toHaveAttribute("data-sheet-state", "full");
+  await page.getByRole("button", {
+    name: "Collapse details to peek",
+  }).click();
+  await expect(sheet).toHaveAttribute("data-sheet-state", "peek");
 });
 
 test("commits filters to the URL and preserves unknown values", async ({ page }) => {
@@ -167,7 +204,7 @@ test("has no automatically detectable WCAG A or AA violations", async ({
 
   await page.getByRole("button", { name: "UKHO · DATA GUIDE" }).click();
   const guideResults = await new AxeBuilder({ page })
-    .include(".data-guide")
+    .include(".atlas-guide")
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();
   expect(guideResults.violations).toEqual([]);

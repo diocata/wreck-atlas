@@ -26,6 +26,7 @@ database or leaving the map.
 
 - Explore documented wreck and obstruction records on a global map
 - Search for wrecks by name and move directly to their recorded position
+- Ask the atlas to discover a documented, named wreck with useful context
 - Filter records by historical era, record type, and reported depth—including
   records where those details are unknown
 - Expand dense areas through interactive map clusters
@@ -33,8 +34,11 @@ database or leaving the map.
   and survey notes when available
 - Copy a link to a selected wreck and reopen the same filtered view
 - Discover other documented records near a selected wreck
-- Read how incomplete fields, recorded positions, source coverage, and
-  licensing are handled
+- Open the in-map Atlas Guide to understand the project, read the map, and see
+  how incomplete fields, recorded positions, source coverage, and licensing
+  are handled
+- On mobile, move wreck details between a quick peek, half sheet, and full
+  record without losing the map
 - Trace each record back to its source and licence information
 
 ## Data and responsibility

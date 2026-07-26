@@ -9,13 +9,16 @@ import type { Era } from "./era";
 
 export type { Era } from "./era";
 
+export type AtlasGuideSection = "about" | "data";
+
 export type AtlasState = {
   selectedWreckId: string | null;
   era: Era;
   recordKind: RecordKindFilter;
   depthBand: DepthBand;
   filterPanelOpen: boolean;
-  aboutPanelOpen: boolean;
+  atlasGuideOpen: boolean;
+  atlasGuideSection: AtlasGuideSection;
   compactWrecks: WreckCompactItem[];
   isCacheLoading: boolean;
   cacheEtag: string | null;
@@ -25,7 +28,8 @@ export type AtlasState = {
   setDepthBand: (depthBand: DepthBand) => void;
   resetFilters: () => void;
   setFilterPanelOpen: (open: boolean) => void;
-  setAboutPanelOpen: (open: boolean) => void;
+  openAtlasGuide: (section?: AtlasGuideSection) => void;
+  closeAtlasGuide: () => void;
   setCompactWrecks: (wrecks: WreckCompactItem[], etag?: string | null) => void;
   setIsCacheLoading: (loading: boolean) => void;
   resetCacheState: () => void;
@@ -38,7 +42,8 @@ export const createAtlasStore = (initialState: Partial<Pick<
   | "recordKind"
   | "depthBand"
   | "filterPanelOpen"
-  | "aboutPanelOpen"
+  | "atlasGuideOpen"
+  | "atlasGuideSection"
   | "compactWrecks"
   | "isCacheLoading"
   | "cacheEtag"
@@ -47,7 +52,8 @@ export const createAtlasStore = (initialState: Partial<Pick<
     selectedWreckId: null,
     ...defaultAtlasFilters,
     filterPanelOpen: false,
-    aboutPanelOpen: false,
+    atlasGuideOpen: false,
+    atlasGuideSection: "about",
     compactWrecks: [],
     isCacheLoading: false,
     cacheEtag: null,
@@ -57,7 +63,9 @@ export const createAtlasStore = (initialState: Partial<Pick<
     setDepthBand: (depthBand) => set({ depthBand }),
     resetFilters: () => set(defaultAtlasFilters),
     setFilterPanelOpen: (filterPanelOpen) => set({ filterPanelOpen }),
-    setAboutPanelOpen: (aboutPanelOpen) => set({ aboutPanelOpen }),
+    openAtlasGuide: (atlasGuideSection = "about") =>
+      set({ atlasGuideOpen: true, atlasGuideSection }),
+    closeAtlasGuide: () => set({ atlasGuideOpen: false }),
     setCompactWrecks: (compactWrecks, cacheEtag = null) =>
       set({ compactWrecks, cacheEtag, isCacheLoading: false }),
     setIsCacheLoading: (isCacheLoading) => set({ isCacheLoading }),

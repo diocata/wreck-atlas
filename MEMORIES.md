@@ -93,10 +93,21 @@ existing ESLint dependency graph.
   depth band in URL parameters. Missing category, depth, year, or name remains
   an explicit unknown state rather than being inferred or discarded.
 - The detail surface supports copyable links and positions, nearby records,
-  conditional safe source metadata, and a user-facing data guide. Nearby
-  distances compare recorded positions and are never navigational guidance.
-- The data guide behaves as a keyboard modal: focus is contained while open,
-  Escape closes it, and focus returns to its trigger on desktop and mobile.
+  conditional safe source metadata, and a three-state mobile sheet: peek,
+  half, and full. The handle supports taps and vertical pointer gestures.
+  Opening nearby records or source notes expands the sheet so their content is
+  not clipped. Nearby distances compare recorded positions and are never
+  navigational guidance.
+- The in-map Atlas Guide explains why the project exists, how to read its map
+  signals, and the data/licensing limits. The wordmark opens its introduction;
+  the source console opens the data section directly. It behaves as a keyboard
+  modal: focus is contained while open, Escape closes it, and focus returns to
+  its trigger on desktop and mobile.
+- “Discover a wreck” chooses from named wreck records and prefers candidates
+  with a reported year or normalized depth. It excludes the current selection,
+  unidentified wreck labels, and obstruction-only records. This curation
+  applies only to discovery; search, filters, and the map continue to preserve
+  and expose sparse or unknown source records.
 - Vercel Speed Insights is integrated, with local performance measures for
   compact cache reads, fetches, validation, and GeoJSON construction.
 

@@ -8,7 +8,7 @@ export function SourceStatus() {
   const compactWrecks = useAtlasStore((state) => state.compactWrecks);
   const isCacheLoading = useAtlasStore((state) => state.isCacheLoading);
   const resetCacheState = useAtlasStore((state) => state.resetCacheState);
-  const setAboutPanelOpen = useAtlasStore((state) => state.setAboutPanelOpen);
+  const openAtlasGuide = useAtlasStore((state) => state.openAtlasGuide);
 
   const handleClearCache = async () => {
     await clearWreckCache();
@@ -23,7 +23,7 @@ export function SourceStatus() {
         className="source-data-guide"
         onClick={(event) => {
           event.currentTarget.focus({ preventScroll: true });
-          setAboutPanelOpen(true);
+          openAtlasGuide("data");
         }}
       >
         UKHO · DATA GUIDE

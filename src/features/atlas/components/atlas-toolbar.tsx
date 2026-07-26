@@ -1,8 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Anchor, Search, SlidersHorizontal, X } from "lucide-react";
+import {
+  Anchor,
+  Radar,
+  Search,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import { wreckSearchResultSchema, type WreckSearchResult } from "@/domain/wreck";
+import { chooseDiscoveryWreck } from "@/features/atlas/model/discovery";
 import { useAtlasStore } from "@/features/atlas/model/atlas-store-provider";
 import { eraOptions } from "@/features/atlas/model/era";
 import {
@@ -25,12 +32,15 @@ export function AtlasToolbar() {
   const depthBand = useAtlasStore((state) => state.depthBand);
   const setDepthBand = useAtlasStore((state) => state.setDepthBand);
   const resetFilters = useAtlasStore((state) => state.resetFilters);
-  const selected = useAtlasStore((state) => state.setSelected);
+  const selectedWreckId = useAtlasStore((state) => state.selectedWreckId);
+  const setSelected = useAtlasStore((state) => state.setSelected);
+  const openAtlasGuide = useAtlasStore((state) => state.openAtlasGuide);
   const open = useAtlasStore((state) => state.filterPanelOpen);
   const setOpen = useAtlasStore((state) => state.setFilterPanelOpen);
   const compactWrecks = useAtlasStore((state) => state.compactWrecks);
   const activeFilterCount = countActiveFilters({ era, recordKind, depthBand });
   const popupOpen = open || results.length > 0;
+  const activeResultId = results[active]?.id;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -70,7 +80,7 @@ export function AtlasToolbar() {
 
   const choose = (result: WreckSearchResult) => {
     resetFilters();
-    selected(result.id);
+    setSelected(result.id);
     setQuery("");
     setResults([]);
     window.dispatchEvent(
@@ -78,12 +88,36 @@ export function AtlasToolbar() {
     );
   };
 
+  const discover = () => {
+    const result = chooseDiscoveryWreck(compactWrecks, selectedWreckId);
+    if (!result) return;
+
+    resetFilters();
+    setOpen(false);
+    setQuery("");
+    setResults([]);
+    setSelected(result.id);
+    window.dispatchEvent(
+      new CustomEvent("atlas:fly-to", {
+        detail: { coordinates: result.coordinates },
+      }),
+    );
+  };
+
   return (
     <header className={`toolbar${popupOpen ? " toolbar-popup-open" : ""}`}>
-      <div className="brand" aria-label="Wreck Atlas">
+      <button
+        type="button"
+        className="brand"
+        onClick={(event) => {
+          event.currentTarget.focus({ preventScroll: true });
+          openAtlasGuide("about");
+        }}
+        aria-label="Open Atlas Guide"
+      >
         <span className="brand-mark"><Anchor aria-hidden="true" size={16} /></span>
         <span>WRECK ATLAS</span>
-      </div>
+      </button>
 
       <div className="search-wrap">
         <Search aria-hidden="true" size={17} />
@@ -111,7 +145,9 @@ export function AtlasToolbar() {
           role="combobox"
           aria-expanded={results.length > 0}
           aria-controls="wreck-results"
-          aria-activedescendant={active >= 0 ? `wreck-result-${results[active]?.id}` : undefined}
+          aria-activedescendant={
+            activeResultId ? `wreck-result-${activeResultId}` : undefined
+          }
         />
         {query && (
           <button
@@ -151,6 +187,22 @@ export function AtlasToolbar() {
           </ul>
         )}
       </div>
+
+      <button
+        type="button"
+        className="discover-button"
+        onClick={discover}
+        disabled={compactWrecks.length === 0}
+        aria-label="Discover a wreck"
+        title={
+          compactWrecks.length > 0
+            ? "Discover a documented wreck"
+            : "Wreck signals are still loading"
+        }
+      >
+        <Radar size={15} />
+        <span>Discover</span>
+      </button>
 
       <div className="filter-wrap">
         <button

@@ -79,7 +79,7 @@ a:focus-visible {
   top: 18px;
   left: 50%;
   transform: translateX(-50%);
-  width: min(720px, calc(100vw - 36px));
+  width: min(850px, calc(100vw - 36px));
   display: flex;
   min-height: 50px;
   align-items: center;
@@ -100,12 +100,20 @@ a:focus-visible {
   display: flex;
   align-items: center;
   gap: 9px;
+  padding: 0;
+  border: 0;
   color: var(--ink);
+  background: transparent;
   font-family: "Arial Rounded MT Bold", "Avenir Next", sans-serif;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.02em;
   white-space: nowrap;
+}
+
+.brand:hover .brand-mark {
+  background: var(--cyan);
+  box-shadow: 2px 2px 0 var(--yellow);
 }
 
 .brand-mark {
@@ -234,6 +242,42 @@ a:focus-visible {
 .filter-wrap {
   position: relative;
   margin-left: auto;
+}
+
+.discover-button {
+  display: flex;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 11px;
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: 2px 2px 0 var(--violet);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+.discover-button:hover:not(:disabled) {
+  background: var(--cyan);
+  box-shadow: 1px 1px 0 var(--violet);
+  transform: translate(1px, 1px);
+}
+
+.discover-button:disabled {
+  color: #969ca4;
+  background: var(--soft);
+  box-shadow: none;
+  cursor: wait;
 }
 
 .filter-button {
@@ -839,23 +883,31 @@ a:focus-visible {
   background: var(--cyan);
 }
 
-.data-guide-backdrop {
+.atlas-guide-backdrop {
   position: absolute;
   z-index: 20;
   inset: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
   padding: 18px;
-  background: rgba(16, 17, 20, 0.42);
+  background:
+    linear-gradient(
+      90deg,
+      rgba(16, 17, 20, 0.48),
+      rgba(16, 17, 20, 0.18) 54%,
+      rgba(16, 17, 20, 0.06)
+    );
   backdrop-filter: blur(4px);
 }
 
-.data-guide {
+.atlas-guide {
   position: relative;
-  width: min(610px, 100%);
-  max-height: calc(100dvh - 36px);
+  width: min(490px, 100%);
+  height: calc(100dvh - 36px);
   overflow: auto;
-  padding: 29px;
+  scroll-behavior: smooth;
+  padding: 29px 29px 34px;
   border: 2px solid var(--ink);
   border-radius: 10px;
   color: var(--ink);
@@ -863,7 +915,7 @@ a:focus-visible {
   box-shadow: 8px 8px 0 var(--cyan), 13px 13px 0 var(--yellow);
 }
 
-.data-guide-kicker {
+.atlas-guide-kicker {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -876,45 +928,211 @@ a:focus-visible {
   text-transform: uppercase;
 }
 
-.data-guide h2 {
-  max-width: 470px;
+.atlas-guide h2 {
+  max-width: 420px;
   margin: 14px 0 10px;
   font-family: "Arial Rounded MT Bold", "Avenir Next", sans-serif;
-  font-size: clamp(27px, 5vw, 42px);
+  font-size: clamp(31px, 4.2vw, 48px);
   letter-spacing: -0.055em;
-  line-height: 0.98;
+  line-height: 0.92;
 }
 
-.data-guide-intro {
-  max-width: 530px;
-  margin: 0 0 22px;
+.atlas-guide h2 span {
+  display: block;
+  color: #087c89;
+}
+
+.atlas-guide-lead > p {
+  max-width: 420px;
+  margin: 16px 0 22px;
   color: #444a52;
   font-size: 14px;
   line-height: 1.58;
 }
 
-.data-guide-section {
-  padding: 14px 0;
+.atlas-guide-index {
+  position: sticky;
+  z-index: 2;
+  top: -29px;
+  display: grid;
+  grid-template-columns: 0.7fr 1.2fr 1fr;
+  gap: 5px;
+  margin: 0 -8px 15px;
+  padding: 9px 8px;
+  border-top: 1px dashed var(--line);
+  border-bottom: 1px dashed var(--line);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+}
+
+.atlas-guide-index button {
+  min-height: 30px;
+  padding: 6px 7px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.atlas-guide-index button:hover {
+  border-color: var(--ink);
+  background: var(--cyan);
+}
+
+.atlas-guide-section {
+  padding: 19px 0;
   border-top: 1px dashed var(--line);
 }
 
-.data-guide-section h3 {
+.atlas-guide-section h3 {
   margin: 0 0 6px;
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.data-guide-section p {
+.atlas-guide-section > p,
+.atlas-guide-note p,
+.atlas-guide-warning p {
   margin: 0;
   color: var(--muted);
   font-size: 12px;
   line-height: 1.55;
 }
 
-.data-guide-warning {
-  margin: 5px 0 12px;
+.atlas-guide-steps {
+  display: grid;
+  gap: 7px;
+  margin: 0 0 21px;
+}
+
+.atlas-guide-steps > div {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: #444a52;
+  background: var(--paper);
+  font-size: 11px;
+}
+
+.atlas-guide-steps svg {
+  color: #087c89;
+}
+
+.atlas-guide-steps b {
+  margin-right: 5px;
+  color: var(--ink);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.signal-key {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.signal-key > div {
+  display: grid;
+  min-height: 54px;
+  grid-template-columns: 52px 1fr;
+  align-items: center;
+  gap: 11px;
+}
+
+.signal-key p {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.signal-key p b {
+  color: var(--ink);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.signal-key-cluster,
+.signal-key-wreck,
+.signal-key-selected {
+  display: grid;
+  place-items: center;
+  justify-self: center;
+}
+
+.signal-key-cluster {
+  width: 42px;
+  height: 42px;
+  border: 2px solid var(--yellow);
+  border-radius: 50%;
+  color: var(--yellow);
+  background: #0a1418;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--cyan) 20%, transparent);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.signal-key-wreck {
+  width: 37px;
+  height: 37px;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  color: var(--ink);
+  background: var(--yellow);
+  font-size: 18px;
+}
+
+.signal-key-selected {
+  width: 39px;
+  height: 39px;
+  border: 4px solid var(--yellow);
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: inset 0 0 0 8px var(--surface);
+}
+
+.atlas-guide-data {
+  scroll-margin-top: 92px;
+}
+
+.atlas-guide-data > .atlas-guide-kicker {
+  margin-bottom: 12px;
+}
+
+.atlas-guide-note {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--paper);
+}
+
+.atlas-guide-note h4,
+.atlas-guide-warning h4 {
+  margin: 0 0 5px;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.atlas-guide-warning {
+  margin: 12px 0;
   padding: 13px;
   border: 2px solid var(--ink);
   border-radius: 5px;
@@ -922,18 +1140,25 @@ a:focus-visible {
   background: var(--yellow);
 }
 
-.data-guide-warning p {
+.atlas-guide-warning p {
   color: var(--ink);
 }
 
-.data-guide-links {
+.atlas-guide-attribution {
+  padding-left: 10px;
+  border-left: 3px solid var(--cyan);
+  font-size: 10px !important;
+}
+
+.atlas-guide-links {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 14px;
-  padding-top: 6px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
 }
 
-.data-guide-links a {
+.atlas-guide-links a {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -943,7 +1168,7 @@ a:focus-visible {
   text-decoration: none;
 }
 
-.data-guide-links a:hover {
+.atlas-guide-links a:hover {
   color: var(--ink);
   text-decoration: underline;
 }
@@ -1075,6 +1300,16 @@ a:focus-visible {
     display: none;
   }
 
+  .discover-button {
+    width: 37px;
+    flex: 0 0 37px;
+    padding: 0;
+  }
+
+  .discover-button span {
+    display: none;
+  }
+
   .filter-popover {
     position: fixed;
     top: 64px;
@@ -1090,38 +1325,92 @@ a:focus-visible {
     right: 0;
     bottom: 0;
     width: 100%;
-    max-height: 58dvh;
+    height: 58dvh;
+    max-height: none;
     padding: 25px 20px 20px;
     border-right: 0;
     border-bottom: 0;
     border-left: 0;
     border-radius: 9px 9px 0 0;
     box-shadow: 0 -7px 0 var(--violet);
+    transition: height 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
-  .data-guide-backdrop {
-    align-items: end;
+  .detail-panel[data-sheet-state="peek"] {
+    height: 188px;
+    overflow: hidden;
+  }
+
+  .detail-panel[data-sheet-state="half"] {
+    height: 58dvh;
+  }
+
+  .detail-panel[data-sheet-state="full"] {
+    height: calc(100dvh - 112px);
+  }
+
+  .detail-panel[data-sheet-state="peek"] .story,
+  .detail-panel[data-sheet-state="peek"] .panel-actions,
+  .detail-panel[data-sheet-state="peek"] .copy-status,
+  .detail-panel[data-sheet-state="peek"] .nearby-signals,
+  .detail-panel[data-sheet-state="peek"] .expand-button,
+  .detail-panel[data-sheet-state="peek"] .expanded,
+  .detail-panel[data-sheet-state="peek"] .coordinates,
+  .detail-panel[data-sheet-state="peek"] .source-link,
+  .detail-panel[data-sheet-state="peek"] .source-warning,
+  .detail-panel[data-sheet-state="peek"] > div:last-child {
+    display: none;
+  }
+
+  .detail-panel[data-sheet-state="peek"] .facts {
+    margin: 14px 0 0;
+  }
+
+  .atlas-guide-backdrop {
     padding: 0;
   }
 
-  .data-guide {
+  .atlas-guide {
     width: 100%;
-    max-height: 86dvh;
-    padding: 25px 20px 21px;
-    border-right: 0;
-    border-bottom: 0;
-    border-left: 0;
-    border-radius: 9px 9px 0 0;
-    box-shadow: 0 -7px 0 var(--cyan);
+    height: 100dvh;
+    padding: 25px 20px 28px;
+    border: 0;
+    border-radius: 0;
+    box-shadow: inset 0 7px 0 var(--cyan);
   }
 
   .sheet-handle {
-    display: block;
+    position: sticky;
+    z-index: 2;
+    top: -14px;
+    display: flex;
+    width: max-content;
+    height: 26px;
+    align-items: center;
+    gap: 7px;
+    margin: -14px auto 4px;
+    padding: 5px 8px;
+    border: 0;
+    border-radius: 4px;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.94);
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 7px;
+    text-transform: uppercase;
+    touch-action: none;
+  }
+
+  .sheet-handle > span {
     width: 38px;
     height: 4px;
-    margin: -14px auto 16px;
-    border-radius: 1px;
+    border-radius: 2px;
     background: var(--ink);
+  }
+
+  .sheet-handle > b {
+    min-width: 24px;
+    font-size: inherit;
+    letter-spacing: 0.05em;
   }
 
   .detail-panel h1 {

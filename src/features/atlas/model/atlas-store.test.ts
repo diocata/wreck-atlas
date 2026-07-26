@@ -11,7 +11,7 @@ describe("atlas store", () => {
     actions.setRecordKind("wreck");
     actions.setDepthBand("unknown");
     actions.setFilterPanelOpen(true);
-    actions.setAboutPanelOpen(true);
+    actions.openAtlasGuide("data");
     actions.setCompactWrecks([
       { id: "42", name: "Signal", category: "Wreck", type: "Ship", coordinates: [0, 0], sunkYear: 1950, depthM: null },
     ], "etag-1");
@@ -23,7 +23,8 @@ describe("atlas store", () => {
       recordKind: "wreck",
       depthBand: "unknown",
       filterPanelOpen: true,
-      aboutPanelOpen: true,
+      atlasGuideOpen: true,
+      atlasGuideSection: "data",
       compactWrecks: [],
       cacheEtag: null,
       isCacheLoading: false,
@@ -35,5 +36,8 @@ describe("atlas store", () => {
       recordKind: "all",
       depthBand: "all",
     });
+
+    store.getState().closeAtlasGuide();
+    expect(store.getState().atlasGuideOpen).toBe(false);
   });
 });
