@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCompactWrecks } from "@/lib/repositories/wreck-repository";
+import { getCompactWrecks } from "@/server/wrecks/repository";
 
 const CURRENT_ETAG = '"ukho-2026-q3"';
 

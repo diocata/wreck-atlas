@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchWrecks } from "@/lib/repositories/wreck-repository";
-import { searchSchema } from "@/lib/validation/wreck-query";
+import { searchSchema } from "@/server/wrecks/query";
+import { searchWrecks } from "@/server/wrecks/repository";
 
 export async function GET(request: NextRequest) {
   const parsed = searchSchema.safeParse(request.nextUrl.searchParams.get("q") ?? "");

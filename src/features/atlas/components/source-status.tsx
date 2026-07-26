@@ -1,8 +1,8 @@
 "use client";
 
 import { RefreshCw, Database } from "lucide-react";
-import { useAtlasStore } from "@/stores/atlas-store-provider";
-import { clearWreckCache } from "@/lib/cache/wreck-cache";
+import { clearWreckCache } from "@/features/atlas/data/wreck-cache";
+import { useAtlasStore } from "@/features/atlas/model/atlas-store-provider";
 
 export function SourceStatus() {
   const compactWrecks = useAtlasStore((state) => state.compactWrecks);
@@ -53,4 +53,3 @@ export function SourceStatus() {
     </footer>
   );
 }
-

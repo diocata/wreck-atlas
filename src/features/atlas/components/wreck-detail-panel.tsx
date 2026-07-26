@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Crosshair, ExternalLink, MapPin, Waves, X } from "lucide-react";
-import { wreckSchema, type Wreck } from "@/lib/domain/wreck";
-import { useAtlasStore } from "@/stores/atlas-store-provider";
+import { wreckSchema, type Wreck } from "@/domain/wreck";
+import { useAtlasStore } from "@/features/atlas/model/atlas-store-provider";
 
 export function WreckDetailPanel() {
   const selected = useAtlasStore((state) => state.selectedWreckId);

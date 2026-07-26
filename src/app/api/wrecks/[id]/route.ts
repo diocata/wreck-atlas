@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { findWreck } from "@/lib/repositories/wreck-repository";
-import { wreckIdSchema } from "@/lib/validation/wreck-query";
+import { wreckIdSchema } from "@/server/wrecks/query";
+import { findWreck } from "@/server/wrecks/repository";
 
 export async function GET(
   _: Request,

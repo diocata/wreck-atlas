@@ -2,27 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Anchor, Search, SlidersHorizontal, X } from "lucide-react";
-import { useAtlasStore } from "@/stores/atlas-store-provider";
-import type { Era } from "@/stores/atlas-store";
-
-type Result = {
-  id: string;
-  name: string;
-  coordinates: [number, number];
-  sunkYear: number | null;
-  type: string;
-};
-
-const eras: { value: Era; label: string; compact: string }[] = [
-  { value: "all", label: "All eras", compact: "All eras" },
-  { value: "before-1900", label: "Before 1900", compact: "< 1900" },
-  { value: "1900-1945", label: "1900–1945", compact: "1900–45" },
-  { value: "after-1945", label: "After 1945", compact: "> 1945" },
-];
+import { wreckSearchResultSchema, type WreckSearchResult } from "@/domain/wreck";
+import { useAtlasStore } from "@/features/atlas/model/atlas-store-provider";
+import { eraOptions } from "@/features/atlas/model/era";
+import { searchCompactWrecks } from "@/features/atlas/model/search";
 
 export function AtlasToolbar() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Result[]>([]);
+  const [results, setResults] = useState<WreckSearchResult[]>([]);
   const [active, setActive] = useState(-1);
   const input = useRef<HTMLInputElement>(null);
   const era = useAtlasStore((state) => state.era);
@@ -31,7 +18,7 @@ export function AtlasToolbar() {
   const open = useAtlasStore((state) => state.filterPanelOpen);
   const setOpen = useAtlasStore((state) => state.setFilterPanelOpen);
   const compactWrecks = useAtlasStore((state) => state.compactWrecks);
-  const currentEra = eras.find((option) => option.value === era) ?? eras[0];
+  const currentEra = eraOptions.find((option) => option.value === era) ?? eraOptions[0];
   const popupOpen = open || results.length > 0;
 
   useEffect(() => {
@@ -43,21 +30,7 @@ export function AtlasToolbar() {
     }
 
     if (compactWrecks.length > 0) {
-      const matches: Result[] = [];
-      for (let i = 0; i < compactWrecks.length; i++) {
-        const w = compactWrecks[i];
-        if (w.name && w.name.toLowerCase().includes(term)) {
-          matches.push({
-            id: w.id,
-            name: w.name,
-            coordinates: w.coordinates,
-            sunkYear: w.sunkYear,
-            type: w.type,
-          });
-          if (matches.length >= 8) break;
-        }
-      }
-      setResults(matches);
+      setResults(searchCompactWrecks(compactWrecks, query));
       setActive(-1);
       return;
     }
@@ -67,7 +40,10 @@ export function AtlasToolbar() {
         const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
           signal: controller.signal,
         });
-        setResults(response.ok ? await response.json() : []);
+        const parsed = response.ok
+          ? wreckSearchResultSchema.array().safeParse(await response.json())
+          : null;
+        setResults(parsed?.success ? parsed.data : []);
         setActive(-1);
       } catch {
         // Search is optional; the map remains usable if it is unavailable.
@@ -81,7 +57,7 @@ export function AtlasToolbar() {
   }, [query, compactWrecks]);
 
 
-  const choose = (result: Result) => {
+  const choose = (result: WreckSearchResult) => {
     setEra("all");
     selected(result.id);
     setQuery("");
@@ -141,8 +117,9 @@ export function AtlasToolbar() {
         {results.length > 0 && (
           <ul id="wreck-results" className="search-results" role="listbox">
             {results.map((result, index) => (
-              <li key={result.id} id={`wreck-result-${result.id}`}>
+              <li key={result.id}>
                 <button
+                  id={`wreck-result-${result.id}`}
                   className={index === active ? "active" : ""}
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => choose(result)}
@@ -179,7 +156,7 @@ export function AtlasToolbar() {
               <span>► SELECT TIMELINE STAGE</span>
             </div>
             <div className="arcade-popover-list">
-              {eras.map((option, idx) => (
+              {eraOptions.map((option, idx) => (
                 <button
                   key={option.value}
                   className={`arcade-stage-btn ${era === option.value ? "selected" : ""}`}

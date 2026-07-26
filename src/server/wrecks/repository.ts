@@ -4,7 +4,8 @@ import { z } from "zod";
 import type {
   Wreck,
   WreckCompactItem,
-} from "@/lib/domain/wreck";
+  WreckSearchResult,
+} from "@/domain/wreck";
 
 
 const sourceName = "UK Hydrographic Office Global Wrecks & Obstructions";
@@ -53,14 +54,6 @@ const mapPointRowSchema = z.object({
   }),
 });
 
-
-export type WreckSearchResult = {
-  id: string;
-  name: string;
-  coordinates: [number, number];
-  sunkYear: number | null;
-  type: string;
-};
 
 type SupabaseConfig = {
   key: string;

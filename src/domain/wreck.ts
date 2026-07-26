@@ -36,3 +36,16 @@ export const wreckCompactItemSchema = wreckSchema.pick({
   sunkYear: true,
   depthM: true,
 });
+
+export const wreckSearchResultSchema = z.object({
+  id: z.string().min(1).max(120),
+  name: z.string().min(1).max(220),
+  coordinates: z.tuple([
+    z.number().min(-180).max(180),
+    z.number().min(-90).max(90),
+  ]),
+  sunkYear: z.number().int().nullable(),
+  type: z.string(),
+});
+
+export type WreckSearchResult = z.infer<typeof wreckSearchResultSchema>;

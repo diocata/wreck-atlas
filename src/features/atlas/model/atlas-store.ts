@@ -1,7 +1,8 @@
 import { createStore } from "zustand/vanilla";
-import type { WreckCompactItem } from "@/lib/domain/wreck";
+import type { WreckCompactItem } from "@/domain/wreck";
+import type { Era } from "./era";
 
-export type Era = "all" | "before-1900" | "1900-1945" | "after-1945";
+export type { Era } from "./era";
 
 export type AtlasState = {
   selectedWreckId: string | null;
@@ -18,7 +19,10 @@ export type AtlasState = {
   resetCacheState: () => void;
 };
 
-export const createAtlasStore = () =>
+export const createAtlasStore = (initialState: Partial<Pick<
+  AtlasState,
+  "selectedWreckId" | "era" | "filterPanelOpen" | "compactWrecks" | "isCacheLoading" | "cacheEtag"
+>> = {}) =>
   createStore<AtlasState>()((set) => ({
     selectedWreckId: null,
     era: "all",
@@ -34,5 +38,5 @@ export const createAtlasStore = () =>
     setIsCacheLoading: (isCacheLoading) => set({ isCacheLoading }),
     resetCacheState: () =>
       set({ compactWrecks: [], cacheEtag: null, isCacheLoading: false }),
+    ...initialState,
   }));
-
