@@ -54,6 +54,7 @@ export function WreckDetailPanel() {
   const close = useRef<HTMLButtonElement>(null);
   const copyTimer = useRef<number | null>(null);
   const dragStartY = useRef<number | null>(null);
+  const dragStartTime = useRef<number>(0);
   const draggedSheet = useRef(false);
   const nearby = useMemo(
     () => wreck
@@ -232,14 +233,19 @@ export function WreckDetailPanel() {
         onPointerDown={(event) => {
           event.currentTarget.setPointerCapture?.(event.pointerId);
           dragStartY.current = event.clientY;
+          dragStartTime.current = performance.now();
           draggedSheet.current = false;
         }}
         onPointerUp={(event) => {
           if (dragStartY.current === null) return;
 
           const delta = event.clientY - dragStartY.current;
+          const elapsed = Math.max(1, performance.now() - dragStartTime.current);
+          const velocity = Math.abs(delta) / elapsed; // px/ms
           dragStartY.current = null;
-          if (Math.abs(delta) < 24) return;
+
+          // If flicked with high velocity (> 0.25px/ms) or dragged past 24px threshold
+          if (Math.abs(delta) < 14 && velocity < 0.25) return;
 
           draggedSheet.current = true;
           setSheetMode((current) => {

@@ -1,14 +1,20 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { RefreshCw, Database } from "lucide-react";
 import { clearWreckCache } from "@/features/atlas/data/wreck-cache";
 import { useAtlasStore } from "@/features/atlas/model/atlas-store-provider";
 
 export function SourceStatus() {
+  const [mounted, setMounted] = useState(false);
   const compactWrecks = useAtlasStore((state) => state.compactWrecks);
   const isCacheLoading = useAtlasStore((state) => state.isCacheLoading);
   const resetCacheState = useAtlasStore((state) => state.resetCacheState);
   const openAtlasGuide = useAtlasStore((state) => state.openAtlasGuide);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleClearCache = async () => {
     await clearWreckCache();
@@ -33,12 +39,12 @@ export function SourceStatus() {
         OSM · OPENFREEMAP
       </a>
       <span className="source-divider" />
-      {isCacheLoading ? (
+      {mounted && isCacheLoading ? (
         <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "var(--cyan, #00f0ff)" }}>
           <RefreshCw size={10} style={{ animation: "spin 1s linear infinite" }} />
           <span>SYNCING CACHE...</span>
         </span>
-      ) : compactWrecks.length > 0 ? (
+      ) : mounted && compactWrecks.length > 0 ? (
         <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }} title="Offline IndexedDB cache active">
           <Database size={10} />
           <span>{compactWrecks.length.toLocaleString()} CACHED</span>
@@ -52,7 +58,7 @@ export function SourceStatus() {
           </button>
         </span>
       ) : null}
-      {compactWrecks.length > 0 && <span className="source-divider" />}
+      {mounted && compactWrecks.length > 0 && <span className="source-divider" />}
       <strong>NOT FOR NAVIGATION</strong>
     </footer>
   );

@@ -24,7 +24,12 @@ export function AtlasToolbar() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<WreckSearchResult[]>([]);
   const [active, setActive] = useState(-1);
+  const [mounted, setMounted] = useState(false);
   const input = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const era = useAtlasStore((state) => state.era);
   const setEra = useAtlasStore((state) => state.setEra);
   const recordKind = useAtlasStore((state) => state.recordKind);
@@ -41,6 +46,7 @@ export function AtlasToolbar() {
   const activeFilterCount = countActiveFilters({ era, recordKind, depthBand });
   const popupOpen = open || results.length > 0;
   const activeResultId = results[active]?.id;
+  const isDiscoverDisabled = !mounted || compactWrecks.length === 0;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -192,10 +198,10 @@ export function AtlasToolbar() {
         type="button"
         className="discover-button"
         onClick={discover}
-        disabled={compactWrecks.length === 0}
+        disabled={isDiscoverDisabled}
         aria-label="Discover a wreck"
         title={
-          compactWrecks.length > 0
+          !isDiscoverDisabled
             ? "Discover a documented wreck"
             : "Wreck signals are still loading"
         }

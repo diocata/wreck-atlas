@@ -24,16 +24,60 @@ body {
   margin: 0;
   color: var(--ink);
   background: var(--paper);
-  font-family: "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button,
-input {
+input,
+a {
   font: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
-button {
+button,
+a {
   cursor: pointer;
+  transition:
+    transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 140ms ease,
+    border-color 140ms ease,
+    box-shadow 120ms cubic-bezier(0.23, 1, 0.32, 1),
+    color 140ms ease,
+    opacity 140ms ease;
+}
+
+@keyframes arcade-popover-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes arcade-guide-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.98) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes arcade-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 button:focus-visible,
@@ -104,7 +148,7 @@ a:focus-visible {
   border: 0;
   color: var(--ink);
   background: transparent;
-  font-family: "Arial Rounded MT Bold", "Avenir Next", sans-serif;
+  font-family: "Arial Rounded MT Bold", -apple-system, BlinkMacSystemFont, "Avenir Next", sans-serif;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -114,6 +158,12 @@ a:focus-visible {
 .brand:hover .brand-mark {
   background: var(--cyan);
   box-shadow: 2px 2px 0 var(--yellow);
+}
+
+.brand:active .brand-mark {
+  background: var(--cyan);
+  box-shadow: 0 0 0 var(--yellow) !important;
+  transform: translate(2px, 2px);
 }
 
 .brand-mark {
@@ -192,6 +242,8 @@ a:focus-visible {
   background: rgba(255, 255, 255, 0.97);
   box-shadow: 6px 6px 0 var(--violet);
   list-style: none;
+  animation: arcade-popover-in 160ms cubic-bezier(0.23, 1, 0.32, 1);
+  transform-origin: top left;
 }
 
 .search-results button {
@@ -205,11 +257,16 @@ a:focus-visible {
   color: var(--ink);
   background: transparent;
   text-align: left;
+  transition: background-color 100ms ease, transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .search-results button:hover,
 .search-results button.active {
   background: color-mix(in srgb, var(--cyan) 20%, white);
+}
+
+.search-results button:active {
+  transform: scale(0.98);
 }
 
 .search-results span {
@@ -262,15 +319,23 @@ a:focus-visible {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   transition:
-    background-color 120ms ease,
-    box-shadow 120ms ease,
-    transform 120ms ease;
+    background-color 100ms ease,
+    box-shadow 100ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.discover-button:hover:not(:disabled) {
+@media (hover: hover) and (pointer: fine) {
+  .discover-button:hover:not(:disabled) {
+    background: var(--cyan);
+    box-shadow: 1px 1px 0 var(--violet);
+    transform: translate(1px, 1px);
+  }
+}
+
+.discover-button:active:not(:disabled) {
   background: var(--cyan);
-  box-shadow: 1px 1px 0 var(--violet);
-  transform: translate(1px, 1px);
+  box-shadow: 0 0 0 var(--violet);
+  transform: translate(2px, 2px);
 }
 
 .discover-button:disabled {
@@ -296,15 +361,28 @@ a:focus-visible {
   text-transform: uppercase;
   cursor: pointer;
   box-shadow: 3px 3px 0 var(--cyan);
-  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease, color 0.15s ease;
+  transition:
+    transform 100ms cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 100ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 120ms ease,
+    color 120ms ease;
 }
 
-.filter-button:hover,
-.filter-button[aria-expanded="true"] {
+@media (hover: hover) and (pointer: fine) {
+  .filter-button:hover,
+  .filter-button[aria-expanded="true"] {
+    color: var(--ink);
+    background: var(--cyan);
+    transform: translate(1.5px, 1.5px);
+    box-shadow: 1.5px 1.5px 0 var(--ink);
+  }
+}
+
+.filter-button:active {
   color: var(--ink);
   background: var(--cyan);
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 var(--ink);
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 var(--ink);
 }
 
 .era-hud-prefix {
@@ -342,6 +420,8 @@ a:focus-visible {
   box-shadow: 6px 6px 0 var(--yellow), 0 0 20px rgba(0, 0, 0, 0.4);
   z-index: 50;
   font-family: "SFMono-Regular", Consolas, monospace;
+  animation: arcade-popover-in 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  transform-origin: top right;
 }
 
 .arcade-popover-header {
@@ -423,15 +503,19 @@ a:focus-visible {
   font-weight: 600;
   text-align: left;
   transition:
-    border-color 120ms ease,
-    background-color 120ms ease,
-    color 120ms ease,
-    transform 120ms ease;
+    border-color 100ms ease,
+    background-color 100ms ease,
+    color 100ms ease,
+    transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .filter-option-grid button:hover {
   border-color: var(--yellow);
   transform: translateY(-1px);
+}
+
+.filter-option-grid button:active {
+  transform: translateY(1px);
 }
 
 .filter-option-grid button.selected {
@@ -440,6 +524,11 @@ a:focus-visible {
   background: var(--cyan);
   font-weight: 700;
   box-shadow: 2px 2px 0 var(--yellow);
+}
+
+.filter-option-grid button.selected:active {
+  box-shadow: 0 0 0 var(--yellow);
+  transform: translate(1px, 1px);
 }
 
 .filter-group > p {
@@ -453,7 +542,6 @@ a:focus-visible {
 .filter-option-grid-kind button:first-child {
   grid-column: 1 / -1;
 }
-
 
 .detail-panel {
   position: absolute;
@@ -470,6 +558,8 @@ a:focus-visible {
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 8px 8px 0 var(--violet);
   backdrop-filter: blur(18px);
+  animation: arcade-popover-in 200ms cubic-bezier(0.23, 1, 0.32, 1);
+  transform-origin: top right;
 }
 
 .panel-kicker {
@@ -499,10 +589,10 @@ a:focus-visible {
 
 .detail-panel h1 {
   margin: 15px 34px 3px 0;
-  font-family: "Arial Rounded MT Bold", "Avenir Next", sans-serif;
+  font-family: "Arial Rounded MT Bold", -apple-system, BlinkMacSystemFont, "Avenir Next", sans-serif;
   font-size: 31px;
-  letter-spacing: -0.055em;
-  line-height: 0.95;
+  letter-spacing: -0.04em;
+  line-height: 0.96;
 }
 
 .record-type {
@@ -567,11 +657,23 @@ a:focus-visible {
   font-size: 8px;
   font-weight: 800;
   text-transform: uppercase;
+  transition:
+    background-color 100ms ease,
+    box-shadow 100ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.panel-actions button:hover {
+@media (hover: hover) and (pointer: fine) {
+  .panel-actions button:hover {
+    background: var(--cyan);
+    box-shadow: 2px 2px 0 var(--yellow);
+  }
+}
+
+.panel-actions button:active {
   background: var(--cyan);
-  box-shadow: 2px 2px 0 var(--yellow);
+  box-shadow: 0 0 0 var(--yellow);
+  transform: translate(2px, 2px);
 }
 
 .copy-status {
@@ -682,11 +784,16 @@ a:focus-visible {
   border-radius: 4px;
   color: var(--muted);
   background: transparent;
+  transition: background-color 120ms ease, color 120ms ease, transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .icon-button:hover {
   color: #fff;
   background: var(--ink);
+}
+
+.icon-button:active {
+  transform: scale(0.92);
 }
 
 .expand-button {
@@ -704,11 +811,22 @@ a:focus-visible {
   font-size: 9px;
   font-weight: 800;
   text-transform: uppercase;
+  transition:
+    transform 100ms cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 100ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 120ms ease;
 }
 
-.expand-button:hover {
-  box-shadow: 1px 1px 0 var(--cyan);
-  transform: translate(2px, 2px);
+@media (hover: hover) and (pointer: fine) {
+  .expand-button:hover {
+    box-shadow: 1.5px 1.5px 0 var(--cyan);
+    transform: translate(1.5px, 1.5px);
+  }
+}
+
+.expand-button:active {
+  box-shadow: 0 0 0 var(--cyan);
+  transform: translate(3px, 3px);
 }
 
 .expand-button svg {
@@ -899,6 +1017,7 @@ a:focus-visible {
       rgba(16, 17, 20, 0.06)
     );
   backdrop-filter: blur(4px);
+  animation: arcade-fade-in 180ms ease-out;
 }
 
 .atlas-guide {
@@ -913,6 +1032,7 @@ a:focus-visible {
   color: var(--ink);
   background: rgba(255, 255, 255, 0.98);
   box-shadow: 8px 8px 0 var(--cyan), 13px 13px 0 var(--yellow);
+  animation: arcade-guide-in 240ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .atlas-guide-kicker {
@@ -931,9 +1051,9 @@ a:focus-visible {
 .atlas-guide h2 {
   max-width: 420px;
   margin: 14px 0 10px;
-  font-family: "Arial Rounded MT Bold", "Avenir Next", sans-serif;
+  font-family: "Arial Rounded MT Bold", -apple-system, BlinkMacSystemFont, "Avenir Next", sans-serif;
   font-size: clamp(31px, 4.2vw, 48px);
-  letter-spacing: -0.055em;
+  letter-spacing: -0.04em;
   line-height: 0.92;
 }
 
@@ -976,11 +1096,21 @@ a:focus-visible {
   font-size: 8px;
   font-weight: 800;
   text-transform: uppercase;
+  transition:
+    transform 100ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 120ms ease,
+    border-color 120ms ease;
 }
 
 .atlas-guide-index button:hover {
   border-color: var(--ink);
   background: var(--cyan);
+}
+
+.atlas-guide-index button:active {
+  border-color: var(--ink);
+  background: var(--cyan);
+  transform: translate(1px, 1px);
 }
 
 .atlas-guide-section {
@@ -1333,7 +1463,7 @@ a:focus-visible {
     border-left: 0;
     border-radius: 9px 9px 0 0;
     box-shadow: 0 -7px 0 var(--violet);
-    transition: height 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: height 260ms cubic-bezier(0.32, 0.72, 0, 1);
   }
 
   .detail-panel[data-sheet-state="peek"] {
@@ -1398,6 +1528,11 @@ a:focus-visible {
     font-size: 7px;
     text-transform: uppercase;
     touch-action: none;
+    transition: transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .sheet-handle:active {
+    transform: scale(0.95);
   }
 
   .sheet-handle > span {
@@ -1510,12 +1645,18 @@ a:focus-visible {
   text-decoration-thickness: 2px;
   text-underline-offset: 3px;
   font-weight: 800;
-  transition: all 0.15s ease;
+  transition:
+    background-color 100ms ease,
+    transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .credits-link:hover {
   background: var(--yellow);
   text-decoration-color: var(--ink);
+}
+
+.credits-link:active {
+  transform: scale(0.96);
 }
 
 .credits-divider {
@@ -1534,12 +1675,18 @@ a:focus-visible {
   color: var(--muted);
   text-decoration: none;
   font-size: 10px;
-  transition: color 0.15s ease;
+  transition:
+    color 100ms ease,
+    transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .credits-social:hover {
   color: var(--ink);
   text-decoration: underline;
+}
+
+.credits-social:active {
+  transform: scale(0.96);
 }
 
 @keyframes spin {
