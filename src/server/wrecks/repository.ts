@@ -1,5 +1,7 @@
 import "server-only";
 
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { z } from "zod";
 import type {
   Wreck,
@@ -230,9 +232,30 @@ async function fetchAllSupabaseCompactWrecks(): Promise<WreckCompactItem[]> {
   }));
 }
 
+async function loadStaticCompactWrecks(): Promise<WreckCompactItem[] | null> {
+  const filePath = join(process.cwd(), "src/server/wrecks/data/compact-wrecks.json");
+  try {
+    const data = await readFile(filePath, "utf8");
+    const parsed = JSON.parse(data);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed as WreckCompactItem[];
+    }
+  } catch {
+    // Continue to fallback
+  }
+
+  return null;
+}
+
 export async function getCompactWrecks(): Promise<WreckCompactItem[]> {
   if (!serverCompactCachePromise) {
-    serverCompactCachePromise = fetchAllSupabaseCompactWrecks().catch((err) => {
+    serverCompactCachePromise = (async () => {
+      const staticData = await loadStaticCompactWrecks();
+      if (staticData) {
+        return staticData;
+      }
+      return fetchAllSupabaseCompactWrecks();
+    })().catch((err) => {
       serverCompactCachePromise = null;
       throw err;
     });

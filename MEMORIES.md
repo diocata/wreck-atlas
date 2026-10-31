@@ -249,3 +249,31 @@ search RPC remains as a fallback while the compact cache is unavailable.
 3. Continue focused desktop/mobile browser QA as concrete issues are found.
 4. Establish performance budgets after production Speed Insights has enough
    traffic to provide a baseline.
+
+## Supabase availability verified — 3 October 2026
+
+At the user's explicit request, Circles was paused and Wreck Atlas resumed
+through Supabase Studio. The active projects in diocata's Org are Wreck Atlas
+and reelist. Pausing the Wreck Atlas project caused its hostname to stop
+resolving; after restoration, the existing server-only app configuration worked
+without credential changes. Public read-model count: 102,625. Local app search,
+detail, and compact endpoints returned HTTP 200; compact response count: 102,625.
+No migrations, ingestion, publication, or application implementation changes
+were made. When this connection symptom recurs, check project pause status
+before changing credentials or data access code.
+
+## Supabase egress optimization and static compact bake — 31 October 2026
+
+Due to Supabase organization egress quotas (5.0 GB free tier threshold),
+the 102,625 compact map points previously fetched via 103 paginated queries
+from `wreck_map_points` on cold starts (~23 MB per full pull) caused excessive
+bandwidth drain. Because UKHO dataset releases are quarterly/static, the 102,625
+compact points were exported to `src/server/wrecks/data/compact-wrecks.json` via
+`scripts/export-compact-wrecks.mjs`.
+
+`src/server/wrecks/repository.ts` now loads `src/server/wrecks/data/compact-wrecks.json`
+directly on the server side first, with dynamic Supabase querying preserved as a
+fallback. This eliminates repeat Supabase egress for atlas map loads entirely (0 MB
+Supabase egress for the compact map feed), served with HTTP 304 / ETag caching via
+Vercel Edge. Detailed wreck queries (`/api/wrecks/[id]`) continue querying Supabase
+on demand (< 1 KB per request).
